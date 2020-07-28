@@ -150,6 +150,6 @@ vlm.plot_grid_arrows(quiver_scale=0.1,
 
 
 plt.savefig(out_plot)
-
+vlm.to_hdf5(os.path.join(out_dir,"saved_velocyto.hdf5")) #can be reloaded with load_velocyto_hdf5(filename)
 
 ds.close()
