@@ -1,0 +1,70 @@
+{
+    "__default__" :
+    {
+        "t" : "35:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/__default__/{rule}_%j.out",
+        "e" : "logs/__default__/{rule}_%j.err",
+        "c" : 1,
+        "mem" : 90000
+    },
+    "RNAvelocity" :
+    {
+        "t" : "24:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 8,
+        "mem" : 200000
+    },
+    "loom_merge" :
+    {
+        "t" : "8:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 1,
+        "mem" : 15000
+    },
+    "seurat_to_loom" :
+    {
+        "t" : "3:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 1,
+        "mem" : 15000
+    },
+    "plot_velocity" :
+    {
+        "t" : "12:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 1,
+        "mem" : 15000
+    },
+    "samtools_sort" :
+    {
+        "t" : "6:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 1,
+        "mem" : 128000
+    }
+}
+
+
