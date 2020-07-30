@@ -18,13 +18,14 @@ PATHS = []
 UNIQ = []
 
 
-with open('input/paths.txt') as file_in:
+with open('input/paths.tsv') as file_in:
 	 for i,line in enumerate(file_in):
 			if i == 0:
 				continue #skip header line
 			else:
+				print(i)
 				location = line.split("\t")[0]
-				uniq	=	line.split("\t")[1]
+				uniq	=	line.split("\t")[1].rstrip()
 				PATHS.append(location)
 				UNIQ.append(uniq)
 				
@@ -63,8 +64,9 @@ for wave in PATHS:
 
 rule all:
 	input:
-		expand(["{wave}/outs/cellsorted_possorted_genome_bam.bam"],wave=PATHS),
-		["{wave}/velocyto/{base}.loom".format(wave = wave, base = os.path.basename(wave)) for wave in PATHS],
+		#expand(["{wave}/outs/cellsorted_possorted_genome_bam.bam"],wave=PATHS),
+		#["{wave}/velocyto/{base}.loom".format(wave = wave, base = os.path.basename(wave)) for wave in PATHS],
+		expand("{}/velocyto/{}.loom".format("{wave}",os.path.basename("{wave}")), wave = PATHS),
 		"results/looms/sorted_merged.loom",
 		expand(["results/{seurat}/velocity_plot.png"],seurat=SEURAT)
 		

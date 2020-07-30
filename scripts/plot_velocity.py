@@ -41,10 +41,19 @@ v_cells = vlm.ca["CellID"]						#Cell ID (must match)
 # setup to change the basename attached to the cellbarcodes with a colon in velocity such as:
 # '[basename(_#)]:[barcode]x' to seurat format '[barcode]_#'
 # 'CEL0024_A_1:TTTACGTCAACCAATCx'  -> 'TTTACGTCAACCAATC_1'
-v_cells = [x.split("_")[-1] for x in v_cells] #takes only the number after the last "_" before the ":"
+lookup = dict()
+with open('input/paths.tsv') as file_in:
+	 for i,line in enumerate(file_in):
+			if i == 0:
+				continue #skip header line
+			else:
+				location = line.split("\t")[0]
+				uniq	=	str(line.split("\t")[1]).rstrip()
+				basename = location.split("/")[-1]
+				lookup[basename] = uniq
+
+v_cells =  [x.split(":")[1] + lookup[x.split(":")[0]] for x in v_cells]
 v_cells = [x.replace("x","_") for x in v_cells] #replace the 'x' at the end with "_"
-v_cells = [x.split(":")[1] + x.split(":")[0] for x in v_cells] 
-#v_cells = [x.replace("pool","") for x in v_cells]             ## no need for this; remove this
 vlm.ca["CellID"] = np.asarray(v_cells) #replace the array in the velocity file
 
 #keep cells that are in cell_ID from seurat object; filter out the rest
