@@ -50,8 +50,7 @@ Activate snakemake environment and run the following:
 
 ## Common Errors
 
-Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* tries to correct this but still needs work. 
+Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* has lines of code that tries to correct for this specific to the project. 
 
-Working on adding work arounds for this in the form of lookup tables for the "orig.ident" samples to the basename of the 10x samples to the postfix of the cells.
 
 Reference: [Velocyto Analysis](https://velocyto.org/velocyto.py/tutorial/analysis.html)
