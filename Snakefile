@@ -23,7 +23,6 @@ with open('input/paths.tsv') as file_in:
 			if i == 0:
 				continue #skip header line
 			else:
-				print(i)
 				location = line.split("\t")[0]
 				uniq	=	line.split("\t")[1].rstrip()
 				PATHS.append(location)
@@ -59,14 +58,17 @@ for rule in rule_dirs:
 def message(mes):
 	sys.stderr.write("|--- " + mes + "\n")
 
-for wave in PATHS:
-	message("10x files in " + wave + " will be processed")
+for sample in PATHS:
+	message("10x files in " + sample + " will be processed")
 
+
+	
 rule all:
 	input:
-		#expand(["{wave}/outs/cellsorted_possorted_genome_bam.bam"],wave=PATHS),
-		#["{wave}/velocyto/{base}.loom".format(wave = wave, base = os.path.basename(wave)) for wave in PATHS],
-		expand("{}/velocyto/{}.loom".format("{wave}",os.path.basename("{wave}")), wave = PATHS),
+		#expand(["{sample}/outs/cellsorted_possorted_genome_bam.bam"],sample = PATHS),
+		#["{sample}/velocyto/{base}.loom".format(sample = sample, base = os.path.basename(sample)) for sample in PATHS],
+		#expand("{path}/velocyto/{base}.loom".format(path = '{sample}',base = os.path.basename('{sample}')), sample = PATHS),
+		expand("{wave}/velocyto/{base}.loom",zip, wave = PATHS, base = [os.path.basename(x) for x in PATHS]),
 		"results/looms/sorted_merged.loom",
 		expand(["results/{seurat}/velocity_plot.png"],seurat=SEURAT)
 		
