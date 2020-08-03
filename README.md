@@ -51,7 +51,7 @@ Activate snakemake environment and run the following:
 ## Common Errors
 
 
-Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* tries to correct this by using the *paths.tsv* file as a map to the corresponding cell barcodes postfix in the single cell object.
+Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* tries to correct this by using the *input/paths.tsv* file as a map to the corresponding cell barcodes postfix in the single cell object.
 
 
 Reference: [Velocyto Analysis](https://velocyto.org/velocyto.py/tutorial/analysis.html)
