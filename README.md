@@ -10,7 +10,7 @@ Runs velocyto on multiple 10x outputs from cellranger to project trajectory arro
 
 Put the seurat object rds file in the **input** directory with *.rds* extension.
 
-Add 10x paths into the "paths.tsv" file in the input directory.
+Add 10x paths into the "input/paths.tsv" file in the input directory.
 
 SAMPLE:
 ```
