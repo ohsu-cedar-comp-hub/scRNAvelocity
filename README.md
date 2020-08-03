@@ -15,8 +15,8 @@ Add 10x paths into the "paths.tsv" file in the input directory.
 SAMPLE:
 ```
 location	name
-/PATH/TO/SAMPLES/10x_1 sample_1
-/PATH/TO/SAMPLES/10x_2 sample_2
+/PATH/TO/SAMPLES/10x_1 1
+/PATH/TO/SAMPLES/10x_2 2
 ```
 The next directory below these paths would be the "outs" dirertory.
 
@@ -50,8 +50,6 @@ Activate snakemake environment and run the following:
 
 ## Common Errors
 
-Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* tries to correct this but still needs work. 
-
-Working on adding work arounds for this in the form of lookup tables for the "orig.ident" samples to the basename of the 10x samples to the postfix of the cells.
+Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* tries to correct this by using the *paths.tsv* file as a map to the corresponding cell barcodes postfix in the single cell object.
 
 Reference: [Velocyto Analysis](https://velocyto.org/velocyto.py/tutorial/analysis.html)
