@@ -1,11 +1,11 @@
 n_cores:
-    4
+    8
 GTF_ref:
-    /home/groups/precepts/enright/experiments/single_cell/GTF_files/refdata-cellranger-hg19-3.0.0/genes/genes.gtf
+    /home/groups/CEDAR/anno/CellRanger/GRCh38/refdata-cellranger-GRCh38-3.0.0/genes/genes.gtf
 repeat_mask:
     /home/groups/precepts/enright/experiments/single_cell/GTF_files/hg38_repeatmask.gtf
 sam_mem:
     50000
 seurat_cluster:
-    "seurat_clusters"
+    Celltype
 

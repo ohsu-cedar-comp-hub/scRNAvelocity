@@ -23,7 +23,7 @@
     },
     "loom_merge" :
     {
-        "t" : "8:00:00",
+        "t" : "12:00:00",
         "N" : 1,
         "partition" : "exacloud",
         "J" : "{rule}",
@@ -34,7 +34,7 @@
     },
     "seurat_to_loom" :
     {
-        "t" : "3:00:00",
+        "t" : "5:00:00",
         "N" : 1,
         "partition" : "exacloud",
         "J" : "{rule}",
@@ -51,7 +51,7 @@
         "J" : "{rule}",
         "o" : "logs/{rule}/{rule}_%j.out",
         "e" : "logs/{rule}/{rule}_%j.err",
-        "c" : 1,
+        "c" : 8,
         "mem" : 15000
     },
     "samtools_sort" :
@@ -62,7 +62,7 @@
         "J" : "{rule}",
         "o" : "logs/{rule}/{rule}_%j.out",
         "e" : "logs/{rule}/{rule}_%j.err",
-        "c" : 1,
+        "c" : 4,
         "mem" : 128000
     }
 }
