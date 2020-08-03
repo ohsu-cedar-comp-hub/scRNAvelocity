@@ -25,7 +25,7 @@ rule seurat_to_loom:
 		"../scripts/seurat2loom.R"
 
 rule loom_merge:
-	input:  expand("{}/velocyto/{}.loom".format("{wave}",os.path.basename("{wave}")), wave = PATHS)
+	input:  expand("{wave}/velocyto/{base}.loom",zip, wave = PATHS, base = [os.path.basename(x) for x in PATHS])
 	output: "results/looms/sorted_merged.loom"
 	conda:
 		"../envs/velocity.yml"
@@ -35,11 +35,11 @@ rule loom_merge:
 
 rule RNAvelocity:
 	input:
-		input_bam="{wave}/outs/cellsorted_possorted_genome_bam.bam"
+		input_bam="{sample}/outs/cellsorted_possorted_genome_bam.bam"
 	output:
-		"{}/velocyto/{}.loom".format("{wave}",os.path.basename("{wave}"))
+		"{sample}/velocyto/{base}.loom"
 	params:
-		name = lambda wildcards: "{wave}".format(wave = wildcards.wave),
+		name = lambda wildcards: "{sample}".format(sample = wildcards.sample),
 		n_cores=config["n_cores"],
 		gtf = config["GTF_ref"],
 		repeat_mask = config["repeat_mask"],
@@ -53,9 +53,9 @@ rule RNAvelocity:
 		  
 rule samtools_sort:
 	input:
-		expand("{wave}/outs/possorted_genome_bam.bam", wave = PATHS)
+		"{sample}/outs/possorted_genome_bam.bam"
 	output:
-		temp("{wave}/outs/cellsorted_possorted_genome_bam.bam")
+		"{sample}/outs/cellsorted_possorted_genome_bam.bam"
 	conda:
 		"../envs/samtools.yml"
 	shell:
