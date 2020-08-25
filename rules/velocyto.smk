@@ -1,24 +1,71 @@
+rule scvelo_batch:
+	input:
+		velocity_loom = "results/{seurat}/sorted_merged_filtered.loom",
+		seurat_loom = "results/{seurat}/{seurat}.loom"
+	output: 
+		out_object="results/{seurat}/scvelo_object_batch.h5ad"
+	conda:
+		"../envs/scvelo.yml"
+	script:
+		"../scripts/scvelo.py"
 
 
+rule scvelo:
+	input:
+		velocity_loom = "results/{seurat}/sorted_merged_filtered.loom",
+		seurat_loom = "results/{seurat}/{seurat}.loom"
+	output: 
+		out_object="results/{seurat}/scvelo_object.h5ad"
+	conda:
+		"../envs/scvelo.yml"
+	script:
+		"../scripts/scvelo.py"
+
+rule scvelo_ind:
+	input:
+		subset_CB=lambda wc:"{sample}/velocyto/{sample_name}.loom".format(sample = PATH_by_base[wc.sample_name], sample_name = wc.sample_name),
+		velocity_loom = lambda wc:"results/{seurat}/sorted_merged_filtered.loom".format(seurat = wc.seurat_sample)
+	output:
+		out_object="results/ind/{seurat_sample}/{sample_name}/scvelo_object.h5ad"
+	params:
+		subset_CB=lambda wc:"{}".format(wc.sample_name)
+	conda:
+		"../envs/scvelo.yml"
+	script:
+		"../scripts/scvelo_ind.py"
 	
 rule plot_velocity:
 	input:
-		velocity_loom = "results/looms/sorted_merged.loom",
-		seurat_loom = "results/seurat/{seurat}.loom"
+		velocity_loom = "results/{seurat}/sorted_merged_filtered.loom",
+		seurat_loom = "results/{seurat}/{seurat}.loom"
 	output: 
 		out_plot="results/{seurat}/velocity_plot.png"
 	params:
-		cluster=config["seurat_cluster"]
+		seurat_cluster=config["seurat_cluster"]
 	conda:
 		"../envs/velocity.yml"
 	script:
 		"../scripts/plot_velocity.py"
+		
+rule correct_CB:
+	input:
+		velocity_loom = "results/looms/sorted_merged.loom",
+		seurat_loom = "results/{seurat}/{seurat}.loom"
+	output:
+		out_file="results/{seurat}/sorted_merged_filtered.loom"
+	params:
+		seurat_cluster=config["seurat_cluster"],
+		seurat_sample = config["seurat_sample"]
+	conda:
+		"../envs/velocity.yml"
+	script:
+		"../scripts/correct_CB.py"
 
 rule seurat_to_loom:
 	input:
 		seurat_file="input/{seurat}.rds"
 	output: 
-		out_loom="results/seurat/{seurat}.loom"
+		out_loom="results/{seurat}/{seurat}.loom"
 	conda:
 		"../envs/seurat.yaml"
 	script:
