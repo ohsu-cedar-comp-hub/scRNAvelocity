@@ -15,6 +15,8 @@ sys.stderr.write("beginning scvelo!")
 velocity_loom = snakemake.input.velocity_loom
 seurat_loom = snakemake.input.seurat_loom
 
+sample_batch = snakemake.params.seurat_sample
+
 out_object = snakemake.output.out_object
 out_dir = os.path.dirname(out_object)
 #walkthrough

@@ -4,6 +4,9 @@ rule scvelo_batch:
 		seurat_loom = "results/{seurat}/{seurat}.loom"
 	output: 
 		out_object="results/{seurat}/scvelo_object_batch.h5ad"
+	params:
+		seurat_cluster=config["seurat_cluster"],
+		seurat_sample = config["seurat_sample"]
 	conda:
 		"../envs/scvelo.yml"
 	script:

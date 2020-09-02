@@ -75,4 +75,5 @@ dependencies:
     - tables
     - tqdm
     - umap-learn
+    - python-igraph
 

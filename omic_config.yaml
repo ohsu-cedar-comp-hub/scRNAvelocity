@@ -7,5 +7,7 @@ repeat_mask:
 sam_mem:
     50000
 seurat_cluster:
-    Celltype
+    CelltypeProgenitor_2
+seurat_sample:
+    Donor
 

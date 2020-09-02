@@ -15,10 +15,11 @@ Add 10x paths into the "paths.tsv" file in the input directory.
 SAMPLE:
 ```
 location	name
-/PATH/TO/SAMPLES/10x_1 sample_1
-/PATH/TO/SAMPLES/10x_2 sample_2
+/PATH/TO/SAMPLES/10x_1 1
+/PATH/TO/SAMPLES/10x_2 2
 ```
-The next directory below these paths would be the "outs" dirertory.
+
+The "outs" directory from 10x cellranger would be a sub-directory of the "/PATH/TO/SAMPLES/10x_1".  The name column references the postfix of the cell barcode used in the seurat object.
 
 
 Add the paths in the *omic_config.yaml* for the GTF files.
@@ -46,12 +47,16 @@ repeat_mask:
 
 Activate snakemake environment and run the following:
 
-`snakemake --use-conda --cores=4 --printshellcmds --reason -np`
+`$snakemake --use-conda --cores=4 --printshellcmds --reason -np`
+
+## Run on cluster
+
+`$sbatch submit_snakemake.sh`
 
 ## Common Errors
 
-Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *plot_velocity.py* tries to correct this but still needs work. 
+Velocyto uses the basename of the path to the 10x location directory and this can cause problems. The script *correct_CB.py* corrects for this by using the "paths.tsv" file as lookup table to connect  Velocyto output with seurat object cell barcodes. 
 
-Working on adding work arounds for this in the form of lookup tables for the "orig.ident" samples to the basename of the 10x samples to the postfix of the cells.
-
-Reference: [Velocyto Analysis](https://velocyto.org/velocyto.py/tutorial/analysis.html)
+## Reference
+[Velocyto Analysis](https://velocyto.org/velocyto.py/tutorial/analysis.html)
+[scVelo](https://scvelo.readthedocs.io)
