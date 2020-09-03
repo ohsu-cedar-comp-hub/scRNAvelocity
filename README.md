@@ -25,11 +25,11 @@ The "outs" directory from 10x cellranger would be a sub-directory of the "/PATH/
 Add the paths in the *omic_config.yaml* for the GTF files.
 
 
-Repeat masker downloaded from [UCSC](https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=611454127_NtvlaW6xBSIRYJEBI0iRDEWisITa&clade=mammal&org=&db=hg38&hgta_group=allTracks&hgta_track=rmsk&hgta_table=rmsk&hgta_regionType=genome&position=&hgta_outputType=gff&hgta_outFileName=hg19_repeatmask.gtf)
+Repeat masker downloaded from [UCSC](https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=611454127_NtvlaW6xBSIRYJEBI0iRDEWisITa&clade=mammal&org=&db=hg38&hgta_group=allTracks&hgta_track=rmsk&hgta_table=rmsk&hgta_regionType=genome&position=&hgta_outputType=gff&hgta_outFileName=hg19_repeatmask.gtf). 
 Repat masker is optional to velocyto but it is required here.
 
 
-Reference gtf anootation files from 10x.
+Reference gtf annotation files from 10x.
 [Human 10x gtf](http://cf.10xgenomics.com/supp/cell-exp/refdata-cellranger-hg19-3.0.0.tar.gz)
 
 The links are to hg19.
@@ -59,4 +59,5 @@ Velocyto uses the basename of the path to the 10x location directory and this ca
 
 ## Reference
 [Velocyto Analysis](https://velocyto.org/velocyto.py/tutorial/analysis.html)
+
 [scVelo](https://scvelo.readthedocs.io)
