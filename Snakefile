@@ -3,6 +3,7 @@ __email__ = "estabroj@ohsu.edu"
 __license__ = "MIT"
 
 """scRNA velocity plot pipeline"""
+#from snakemake.io import expand
 
 import numpy as np
 import datetime
@@ -17,6 +18,7 @@ from pathlib import Path
 PATHS = []
 UNIQ = []
 
+PATH_by_base = {}
 
 with open('input/paths.tsv') as file_in:
 	 for i,line in enumerate(file_in):
@@ -27,7 +29,7 @@ with open('input/paths.tsv') as file_in:
 				uniq	=	line.split("\t")[1].rstrip()
 				PATHS.append(location)
 				UNIQ.append(uniq)
-				
+				PATH_by_base[os.path.basename(location)] = location
 	  
 SEURAT,=glob_wildcards('input/{seurat}.rds')
 
@@ -65,12 +67,11 @@ for sample in PATHS:
 	
 rule all:
 	input:
-		#expand(["{sample}/outs/cellsorted_possorted_genome_bam.bam"],sample = PATHS),
-		#["{sample}/velocyto/{base}.loom".format(sample = sample, base = os.path.basename(sample)) for sample in PATHS],
-		#expand("{path}/velocyto/{base}.loom".format(path = '{sample}',base = os.path.basename('{sample}')), sample = PATHS),
 		expand("{wave}/velocyto/{base}.loom",zip, wave = PATHS, base = [os.path.basename(x) for x in PATHS]),
 		"results/looms/sorted_merged.loom",
-		expand(["results/{seurat}/velocity_plot.png"],seurat=SEURAT)
+		expand(["results/{seurat}/scvelo_object_batch.h5ad"],seurat=SEURAT),
+		expand(["results/{seurat}/scvelo_object.h5ad"],seurat=SEURAT),
+		expand("results/ind/{seurat_sample}/{sample_name}/scvelo_object.h5ad", seurat_sample = SEURAT, sample_name = [os.path.basename(x) for x in PATHS])
 		
 		
 		
