@@ -41,7 +41,7 @@ prop_plot = scv.pl.proportions(adata, show = False)
 
 
 #filter genes, normalize per cell, filter genes dispersion, and scale (log1p)
-scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=2000)
+scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=None)
 #first and second order moments (means and uncentered variances) computed among nearest neighbors in PCA space, computes: pca and neighbors
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
 #default mode for velocity is stochastic,  mode = 'dynamical' and mode = "deterministic" are also available.   see https://scvelo.readthedocs.io/about.html
@@ -87,6 +87,13 @@ df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 # Likelihood ratio test for differential kinetics to detect clusters/lineages that display kinetic behavior that cannot be sufficiently explained by a single model for the overall dynamics
 #scv.tl.differential_kinetic_test(adata, var_names = 'velocity_genes', groupby='cluster')
 
+#genes_of_interest = ["RUNX1","EEF2","HIST1H1D","RPS29","HSP90AB1","RPL3","HIST1H1E","NCL","RPS27","RPS28","H3F3B","NUCB2","CD74","RPS21","PRDX1","RPL36","FOS","RPS4X","RPL36A","JUN","NRIP1","SLC25A6","IFI44L","RPS4Y1","HIST1H1C","HSP90AA1","IER2","RPS26","SPINK2","ACTB","RPL17","ITGA4","HIST1H4C","S100A10","RPL41","LARS"]
+genes_of_interest = ["RUNX1", "CD74", "MIF", "FOS", "CCL2", "PU.1", "TLR4", "TLR2"]
+for gene in genes_of_interest:
+	try:
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5),legend_loc = 'best',save = "scatter_gene_{}.png".format(gene))
+	except:
+		sys.stderr.write("{} not included".format(gene))
 
 almost_time = datetime.datetime.now().timestamp()
 sys.stderr.write("almost finished in: " + str(round((almost_time-begin_time)/60/60,2)) + " hours")
@@ -99,6 +106,9 @@ fig.savefig('figures/proportions.png')
 os.chdir(curr_dir)
 
 adata.write_h5ad(out_object)
+
+
+adata.obs.to_csv("scvelo_obs.tsv",sep="\t")
 
 #completed timestamp
 end_time = datetime.datetime.now().timestamp()
