@@ -9,5 +9,5 @@ sam_mem:
 seurat_cluster:
     CelltypeProgenitor_2
 seurat_sample:
-    Donor
+    Condition
 

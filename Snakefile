@@ -18,6 +18,8 @@ from pathlib import Path
 PATHS = []
 UNIQ = []
 
+genes_of_interest = ["RUNX1","CD74","MIF","FOS","CCL2", "PU.1", "TLR4", "TLR2","CD44", "SRC", "PI3K","AKT", "TEN", "JAB1", "CXCL8", "MAPK", "ERK", "SPI1", "STAT3", "STAT5", "NFKb", "CXCR1/2","CXCR1","CXCR2",  "JUN", "GATA1"]
+
 PATH_by_base = {}
 
 with open('input/paths.tsv') as file_in:
@@ -71,7 +73,9 @@ rule all:
 		"results/looms/sorted_merged.loom",
 		expand(["results/{seurat}/scvelo_object_batch.h5ad"],seurat=SEURAT),
 		expand(["results/{seurat}/scvelo_object.h5ad"],seurat=SEURAT),
-		expand("results/ind/{seurat_sample}/{sample_name}/scvelo_object.h5ad", seurat_sample = SEURAT, sample_name = [os.path.basename(x) for x in PATHS])
+		expand("results/ind/{seurat_sample}/{sample_name}/scvelo_object.h5ad", seurat_sample = SEURAT, sample_name = [os.path.basename(x) for x in PATHS]),
+		expand("results/{seurat}/Analyze/scvelo_obs.tsv",seurat = SEURAT),
+		expand("results/{seurat}/Analyze/scvelo_analysis.html", seurat = SEURAT)
 		
 		
 		

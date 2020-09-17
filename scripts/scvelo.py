@@ -11,7 +11,7 @@ curr_dir = os.getcwd()
 begin_time = datetime.datetime.now().timestamp()
 velocity_loom = snakemake.input.velocity_loom
 seurat_loom = snakemake.input.seurat_loom
-
+genes_of_interest = snakemake.params.genes
 out_object = snakemake.output.out_object
 out_dir = os.path.dirname(out_object)
 #walkthrough
@@ -87,11 +87,12 @@ df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 # Likelihood ratio test for differential kinetics to detect clusters/lineages that display kinetic behavior that cannot be sufficiently explained by a single model for the overall dynamics
 #scv.tl.differential_kinetic_test(adata, var_names = 'velocity_genes', groupby='cluster')
 
-#genes_of_interest = ["RUNX1","EEF2","HIST1H1D","RPS29","HSP90AB1","RPL3","HIST1H1E","NCL","RPS27","RPS28","H3F3B","NUCB2","CD74","RPS21","PRDX1","RPL36","FOS","RPS4X","RPL36A","JUN","NRIP1","SLC25A6","IFI44L","RPS4Y1","HIST1H1C","HSP90AA1","IER2","RPS26","SPINK2","ACTB","RPL17","ITGA4","HIST1H4C","S100A10","RPL41","LARS"]
-genes_of_interest = ["RUNX1", "CD74", "MIF", "FOS", "CCL2", "PU.1", "TLR4", "TLR2"]
+
 for gene in genes_of_interest:
 	try:
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5),legend_loc = 'best',save = "scatter_gene_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "cluster",legend_loc = 'best',save = "scatter_gene_cluster_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "Condition",legend_loc = 'best',save = "scatter_gene_condition_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "celltype_Condition",legend_loc = 'best',save = "scatter_gene_celltype_{}.png".format(gene))
 	except:
 		sys.stderr.write("{} not included".format(gene))
 
@@ -108,7 +109,7 @@ os.chdir(curr_dir)
 adata.write_h5ad(out_object)
 
 
-adata.obs.to_csv("scvelo_obs.tsv",sep="\t")
+
 
 #completed timestamp
 end_time = datetime.datetime.now().timestamp()

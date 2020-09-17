@@ -12,7 +12,7 @@ begin_time = datetime.datetime.now().timestamp()
 sys.stderr.write("beginning scvelo!")
 velocity_loom = snakemake.input.velocity_loom
 subset_CB = snakemake.params.subset_CB
-
+genes_of_interest = snakemake.params.genes
 out_object = snakemake.output.out_object
 out_dir = os.path.dirname(out_object)
 #walkthrough
@@ -67,7 +67,7 @@ prop_plot = scv.pl.proportions(adata, show = False)
 #filter genes, normalize per cell, filter genes dispersion, and scale (log1p)
 scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=None)
 #first and second order moments (means and uncentered variances) computed among nearest neighbors in PCA space, computes: pca and neighbors
-scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+scv.pp.moments(adata, n_neighbors=30,n_pcs=30)
 #default mode for velocity is stochastic,  mode = 'dynamical' and mode = "deterministic" are also available.   see https://scvelo.readthedocs.io/about.html
 scv.tl.velocity(adata)
 #transition probabilties calculated by cosine correlation between the potential cell-to-cell transitions
@@ -98,11 +98,10 @@ df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 #df = scv.DataFrame(adata.uns['rank_velocity_genes']['names'])
 #df.to_csv("rank_velocity_genes_by_cluster.tsv",sep="\t")
 
-#genes_of_interest = ["RUNX1","EEF2","HIST1H1D","RPS29","HSP90AB1","RPL3","HIST1H1E","NCL","RPS27","RPS28","H3F3B","NUCB2","CD74","RPS21","PRDX1","RPL36","FOS","RPS4X","RPL36A","JUN","NRIP1","SLC25A6","IFI44L","RPS4Y1","HIST1H1C","HSP90AA1","IER2","RPS26","SPINK2","ACTB","RPL17","ITGA4","HIST1H4C","S100A10","RPL41","LARS"]
-genes_of_interest = ["RUNX1", "CD74", "MIF", "FOS", "CCL2", "PU.1", "TLR4", "TLR2"]
+
 for gene in genes_of_interest:
 	try:
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5),legend_loc = 'best',save = "scatter_gene_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5),color = 'cluster',legend_loc = 'best',save = "scatter_gene_{}.png".format(gene))
 	except:
 		sys.stderr.write("{} not included".format(gene))
 

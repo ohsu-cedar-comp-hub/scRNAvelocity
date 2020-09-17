@@ -1,3 +1,32 @@
+rule make_html:
+	input:
+		in_object="results/{seurat}/Analyze/scvelo_obs.tsv"
+	output: 
+		html="results/{seurat}/Analyze/scvelo_analysis.html"
+	params:
+		base_directory= lambda wildcards: "./results/{seurat}".format(seurat = wildcards.seurat),
+		script="scripts/Analysis.Rmd",
+		seurat=lambda wildcards: "{}".format(wildcards.seurat),
+		genes=genes_of_interest
+	conda:
+		"../envs/seurat.yaml"
+	shell: 
+		"""
+		Rscript -e 'rmarkdown::render(\"./{params.script}\", output_file = \"../{output.html}\", params=list(inputobs = \"../{input.in_object}\", directory = \"../{params.base_directory}\", seurat=\"{params.seurat}\",genes=\"{params.genes}\"))'
+		"""
+
+rule analyze_scvelo:
+	input:
+		in_object="results/{seurat}/scvelo_object.h5ad"
+	output: 
+		out_object="results/{seurat}/Analyze/scvelo_obs.tsv"
+	params:
+		genes=genes_of_interest
+	conda:
+		"../envs/scvelo.yml"
+	script:
+		"../scripts/Analyze_Cluster_Condition.py"
+
 rule scvelo_batch:
 	input:
 		velocity_loom = "results/{seurat}/sorted_merged_filtered.loom",
@@ -6,7 +35,8 @@ rule scvelo_batch:
 		out_object="results/{seurat}/scvelo_object_batch.h5ad"
 	params:
 		seurat_cluster=config["seurat_cluster"],
-		seurat_sample = config["seurat_sample"]
+		seurat_sample = config["seurat_sample"],
+		genes=genes_of_interest
 	conda:
 		"../envs/scvelo.yml"
 	script:
@@ -19,6 +49,8 @@ rule scvelo:
 		seurat_loom = "results/{seurat}/{seurat}.loom"
 	output: 
 		out_object="results/{seurat}/scvelo_object.h5ad"
+	params:
+		genes=genes_of_interest
 	conda:
 		"../envs/scvelo.yml"
 	script:
@@ -31,7 +63,8 @@ rule scvelo_ind:
 	output:
 		out_object="results/ind/{seurat_sample}/{sample_name}/scvelo_object.h5ad"
 	params:
-		subset_CB=lambda wc:"{}".format(wc.sample_name)
+		subset_CB=lambda wc:"{}".format(wc.sample_name),
+		genes=genes_of_interest
 	conda:
 		"../envs/scvelo.yml"
 	script:
