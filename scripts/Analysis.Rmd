@@ -1,0 +1,209 @@
+---
+title: "RNA Velocity"
+author: "Trevor Enright"
+date: "9/16/2020"
+output: 
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: true
+params:
+  inputobs: "PATH/TO/OBS.tsv"
+  seurat: "seurat_path"
+  directory: "path_to_base_input"
+  genes: "string of genes"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(tidyr)
+library(gridExtra)
+
+input_dir <- params$directory
+scvelo_path <- params$inputobs
+seurat <- params$seurat
+genes <- params$genes
+
+```
+
+# RNA velocity 
+
+RNA velocity leverages unspliced pre-mRNAs and mature, spliced mRNAs can be distinguished in common single-cell RNA-seq protocols, the former detectable by the presence of introns.   For each gene, a steady-state-ratio of pre-mature (unspliced) and mature (spliced) mRNA counts is fitted, which constitutes a constant transcriptional state. Velocities are then obtained as residuals from this ratio. Velocities are vectors in gene expression space and represent the direction and speed of movement of the individual cells.
+
+```{r echo = F, eval = T}
+
+scvelo <- read.delim(paste(getwd(),scvelo_path,sep="/"))
+
+string_to_list <- function (x) {
+  return(unlist(strsplit(gsub("\\s", ",", x) ,",")))
+}
+
+genes_of_interest <- string_to_list(genes)
+
+unique_clusters <- unique(scvelo$cluster)
+
+```
+
+# Spliced vs Unspliced by Donor
+
+```{r echo = F, eval = T, out.width='100%'}
+par(mfrow=c(1,1))
+
+
+re_moded_prop <- reshape(scvelo, direction = "long", varying = list(c("initial_size_spliced","initial_size_unspliced")), v.names = "intial_size", timevar = "splice_status", times = c("initial_size_spliced","initial_size_unspliced")) 
+
+re_moded_prop$splice_status <- gsub("initial_size_unspliced","unspliced",gsub("initial_size_spliced","spliced",re_moded_prop$splice_status))
+
+
+
+re_moded_prop$donor_percent <- paste(re_moded_prop$Donor,re_moded_prop$splice_status,sep="_")
+df <- list()
+for(don in unique(re_moded_prop$Donor)){
+  cur_set <- re_moded_prop[which(re_moded_prop$Donor == don),]
+  
+  spliced <- sum(cur_set[which(cur_set$splice_status == "spliced"),"intial_size"])/sum(cur_set$intial_size)
+  df[[don]] <- spliced
+}
+
+new_prop <- re_moded_prop$donor_percent
+for (cell in unique(re_moded_prop$donor_percent)){
+  donor <- unlist(strsplit(cell,"_"))[1]
+  status <- unlist(strsplit(cell,"_"))[2]
+  spliced_prop <- round(df[[donor]]*100,1)
+  unspliced_prop <- round((1-df[[donor]])*100,1)
+  new_prop <- gsub(paste(donor,"spliced",sep="_"),paste0(spliced_prop,"%"),gsub(paste(donor,"unspliced",sep="_"),paste0(unspliced_prop,"%"),new_prop))
+}
+
+re_moded_prop$donor_percent <- new_prop
+ggplot(re_moded_prop, aes(x = splice_status, y = intial_size, fill = splice_status )) + geom_bar(stat = "identity")  + facet_wrap(~Donor) + theme(axis.text.x = element_text(angle = 50, vjust = 0.5, hjust=1)) + ylab("counts") + geom_text(aes(x=splice_status,y=100000000,label = donor_percent))
+```
+
+
+# Velocity UMAPS
+
+
+## No batch correction  {.tabset .tabset-fade .tabset-pills}
+
+
+### Stream
+
+```{r  ,eval = T, echo = F, message = F, warning = F, out.width='100%'}
+base_path <- paste(getwd(),"../results",seurat,"figures",sep="/")
+
+file_path <- paste(base_path,"scvelo_scvelo_stream.png",sep="/")
+if(file.exists(file_path)){   knitr::include_graphics(path = file_path) } 
+
+```
+
+### Confidence  
+
+
+* The speed or rate of differentiation is given by the length of the velocity vector.
+* The coherence of the vector field (i.e., how a velocity vector correlates with its neighboring velocities) provides a measure of confidence.
+
+```{r  ,eval = T, echo = F, message = F, warning = F, out.width='100%'}
+
+file_path <- paste(base_path,"scvelo_scatter_confidence.png",sep="/")
+if(file.exists(file_path)){   knitr::include_graphics(path = file_path) } 
+```
+
+```{r  ,eval = T, echo = F, message = F, warning = F, out.width='100%'}
+
+file_path <- paste(base_path,"scvelo_scvelo_stream.png",sep="/")
+if(file.exists(file_path)){   knitr::include_graphics(path = file_path) } 
+```
+
+
+## Batch balanced KNN (using samples as batches)  {.tabset .tabset-fade .tabset-pills}
+
+```{r  ,eval = T, echo = F, message = F, warning = F, out.width='100%'}
+
+file_path <- paste(base_path,"scvelo_scvelo_stream_batch.png",sep="/")
+if(file.exists(file_path)){   knitr::include_graphics(path = file_path) } 
+```
+
+Batch balanced kNN alters the kNN procedure to identify each cell’s top neighbours in each batch separately instead of the entire cell pool with no accounting for batch. Aligns batches in a quick and lightweight manner. https://scanpy.readthedocs.io/en/stable/external/scanpy.external.pp.bbknn.html https://academic.oup.com/bioinformatics/article/36/3/964/5545955
+
+# Individual samples {.tabset .tabset-fade .tabset-pills}
+
+
+```{r echo = F, eval = T}
+
+paths <- read.delim("../input/paths.tsv")
+working_names <- basename(as.vector(paths[,1]))
+
+
+#names(working_names) <- working_code_names
+#common_name <- unname(working_names[working_samples])
+
+base_path = paste(getwd(),"../results/ind",seurat,sep = "/")
+
+```
+
+```{r, results = "asis",echo=F}
+
+for (i in 1:length(working_names)){
+  cur_sample <- working_names[i]
+  cur_path <- paste(base_path,cur_sample,"figures",sep="/")
+  file_path <- paste(cur_path,"proportions.png",sep="/")
+  if(file.exists(file_path)){
+    cat("## ",cur_sample,"\n\n")
+    cat('\n![Proportions](',file_path,')\n')
+    cat('\n')
+  }
+  file_path <- paste(cur_path,"scvelo_scatter_confidence.png",sep="/")
+  if(file.exists(file_path)){
+    cat('\n![Scatter confidence](',file_path,')\n')
+    cat('\n')
+  }
+  file_path <- paste(cur_path,"scvelo_scvelo_stream.png",sep="/")
+  if(file.exists(file_path)){
+    cat('\n![Stream](',file_path,')\n')
+    cat('\n')
+  }
+}
+```
+
+# Phase Portrait and Violins
+
+Transcriptional induction for a particular gene results in an increase of (newly transcribed) precursor unspliced mRNAs while, conversely, repression or absence of transcription results in a decrease of unspliced mRNAs. Spliced mRNAs is produced from unspliced mRNA and follows the same trend with a time lag. Time is a hidden/latent variable. Thus, the dynamics needs to be inferred from what is actually measured: spliced and unspliced mRNAs as displayed in the phase portrait.
+
+[Animation](https://user-images.githubusercontent.com/31883718/80227452-eb822480-864d-11ea-9399-56886c5e2785.gif)
+
+
+## Cell Types {.tabset .tabset-fade .tabset-pills}
+
+```{r echo = F, results='asis'}
+base_path <- paste(getwd(),"../results",seurat,"Analyze/figures",sep="/")
+
+for (clust in unique_clusters){
+	cat("### ",clust," {.tabset .tabset-fade .tabset-pills}\n")
+	file_path <- paste(base_path,sprintf("violinvelocity_length_%s.png",clust),sep="/")
+		if(file.exists(file_path)){
+			cat('\n![Violin](',file_path,')\n\n')
+		}
+	cat("#### Gene {.tabset .tabset-fade .tabset-pills}\n\n")
+	for (i in 1:length(genes_of_interest)){
+		cur_gene <- genes_of_interest[i]
+		
+		file_path <- paste(base_path,sprintf("scvelo_scatter_gene_cluster_%s_%s.png",clust,cur_gene),sep="/")
+		if(file.exists(file_path)){
+			cat("##### ",cur_gene,"\n")
+			cat('\n![Scatter](',file_path,')\n\n')
+		}
+		
+	}
+
+}
+```
+
+
+
+
+
+
+
+
