@@ -18,12 +18,25 @@ from pathlib import Path
 PATHS = []
 UNIQ = []
 
+
 genes_of_interest = ["RUNX1","CD74","MIF","FOS","CCL2", "PU.1", "TLR4", "TLR2","CD44", "SRC", "PI3K","AKT", "TEN", "JAB1", "CXCL8", "MAPK", "ERK", "SPI1", "STAT3", "STAT5", "NFKb", "CXCR1/2","CXCR1","CXCR2",  "JUN", "GATA1"]
+seurat_cb_correction = '-1_'
 
+
+PATH_by_wave = {}
+Index_by_wave = {}
 PATH_by_base = {}
+Base_by_PATH = {} 
+Lookup_index = {}
+Index_by_base = {}
+WAVES,=glob_wildcards('input/{wave}_locations.tsv')
 
-with open('input/paths.tsv') as file_in:
-	 for i,line in enumerate(file_in):
+for wave in WAVES:
+	with open('input/{wave}_locations.tsv'.format(wave = wave)) as file_in:
+		Locations = []
+		Indexes = []
+		lookup = {}
+		for i,line in enumerate(file_in):
 			if i == 0:
 				continue #skip header line
 			else:
@@ -31,9 +44,19 @@ with open('input/paths.tsv') as file_in:
 				uniq	=	line.split("\t")[1].rstrip()
 				PATHS.append(location)
 				UNIQ.append(uniq)
-				PATH_by_base[os.path.basename(location)] = location
-	  
-SEURAT,=glob_wildcards('input/{seurat}.rds')
+				Locations.append(location)
+				Indexes.append(uniq)
+				PATH_by_base[os.path.basename(location)] = location #assuming basenames are unique
+				Base_by_PATH[location] = os.path.basename(location)
+				lookup[os.path.basename(location)] = uniq
+				Index_by_base[os.path.basename(location)] = uniq #assuming basenames are unique
+		PATH_by_wave[wave] = Locations
+		Index_by_wave[wave] = Indexes
+		Lookup_index[wave] = lookup
+
+
+PATHS = list(set(PATHS)) #get unique paths to 10x outputs
+  
 
 def get_contrast_global(wildcards):
 	"""Return each contrast provided in the configuration file"""
@@ -62,21 +85,20 @@ for rule in rule_dirs:
 def message(mes):
 	sys.stderr.write("|--- " + mes + "\n")
 
-for sample in PATHS:
-	message("10x files in " + sample + " will be processed")
+for wave in WAVES:
+	message("10x files in " + wave + " will be processed")
 
-
-	
+#sample_name = [os.path.basename(locations) for wave in WAVES for locations in PATH_by_wave[wave]]
+#seurat = os.path.splitext(os.path.basename(config["seuratObj"]))[0]	
 rule all:
 	input:
-		expand("{wave}/velocyto/{base}.loom",zip, wave = PATHS, base = [os.path.basename(x) for x in PATHS]),
-		"results/looms/sorted_merged.loom",
-		expand(["results/{seurat}/scvelo_object_batch.h5ad"],seurat=SEURAT),
-		expand(["results/{seurat}/scvelo_object.h5ad"],seurat=SEURAT),
-		expand("results/ind/{seurat_sample}/{sample_name}/scvelo_object.h5ad", seurat_sample = SEURAT, sample_name = [os.path.basename(x) for x in PATHS]),
-		expand("results/{seurat}/Analyze/scvelo_obs.tsv",seurat = SEURAT),
-		expand("results/{seurat}/Analyze/scvelo_analysis.html", seurat = SEURAT)
-		
+		#expand("{sample}/velocyto/{base}.loom",zip, sample = PATHS, base = [os.path.basename(locations) for locations in PATHS]),
+		#expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
+		#expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
+		#expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
+		#expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
+		expand("results/{wave}/Analyze/scvelo_obs.tsv",wave = WAVES),
+		expand("results/{wave}/Analyze/scvelo_analysis.html", wave = WAVES)
 		
 		
 include: "rules/velocyto.smk"
