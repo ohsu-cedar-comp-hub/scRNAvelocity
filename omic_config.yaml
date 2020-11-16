@@ -7,7 +7,11 @@ repeat_mask:
 sam_mem:
     50000
 seurat_cluster:
-    CelltypeProgenitor_2
-seurat_sample:
+    predicted
+seurat_status:
     Condition
+seurat_batch:
+    orig.ident
+seuratObj:
+    /PATH/TO/SEURATOBJECT.RDS
 
