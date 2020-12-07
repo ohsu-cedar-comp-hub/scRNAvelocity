@@ -8,7 +8,7 @@ Runs velocyto on multiple 10x outputs from cellranger to project trajectory arro
 
 ## Setup
 
-Put the seurat object rds file in the **input** directory with *.rds* extension.
+Put the seurat object rds file path in the *omic_config.yaml*.
 
 Add 10x paths into the "paths.tsv" file in the input directory.
 
