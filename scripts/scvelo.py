@@ -21,6 +21,15 @@ out_dir = os.path.dirname(out_object)
 #https://readthedocs.org/projects/scvelo/downloads/pdf/latest/
 
 
+#################  CUSTOM Colors
+
+Color_hex = ["#67CAD4","#B0207E"] #purple for FPD, teal for HD
+Order_plot = ["HD","FPD"]
+color_dict = dict(zip(Order_plot,Color_hex))
+
+###################
+
+
 #ds = loompy.connect(seurat_loom,mode = "r") #seurat object to loom ... in r 'as.loom(seuratObj, filename = "seuratObj.loom") 
 adata = scv.read(velocity_loom)
 
@@ -45,7 +54,8 @@ scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=None)
 #first and second order moments (means and uncentered variances) computed among nearest neighbors in PCA space, computes: pca and neighbors
 scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
 #default mode for velocity is stochastic,  mode = 'dynamical' and mode = "deterministic" are also available.   see https://scvelo.readthedocs.io/about.html
-scv.tl.velocity(adata)
+scv.tl.recover_dynamics(adata)
+scv.tl.velocity(adata,mode = 'dynamical')
 #transition probabilties calculated by cosine correlation between the potential cell-to-cell transitions
 
 #project velocities onto umap
@@ -72,7 +82,15 @@ df = adata.obs.groupby('cluster')[keys].mean().T
 #df.style.background_gradient(cmap='coolwarm', axis=1)
 df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 
-#scv.tl.velocity_pseudotime(adata)
+ 
+
+#begin_cells = [adata.obs.index.values[i] for i,x in enumerate(adata.obs["cluster"]) if x == "MKP"]
+#end_cells = [adata.obs.index.values[i] for i,x in enumerate(adata.obs["cluster"]) if x == "HSC"]
+#end_p = [i for i,x in enumerate(adata.obs["cluster"]) if x == "MKP"] # index of the cells in end cells as end point for pseudotime
+#begin_p = [i  for i,x in enumerate(adata.obs["cluster"]) if x == "HSC"]# index of the cells in begin cells as begin point for pseudotime
+
+#scv.tl.velocity_pseudotime(adata,root_key = begin_p[0], end_key = end_p[0]) #,groupby = 'cluster')
+#scv.pl.scatter(adata, color = 'velocity_pseudotime', cmap='gnuplot', save = "pseudotime.png")
 #scv.tl.velocity_clusters(adata, match_with = "cluster")
 #scv.pl.scatter(adata, color='velocity_clusters', save = "scatter_velo.png")
 
@@ -91,7 +109,7 @@ df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 for gene in genes_of_interest:
 	try:
 		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "cluster",legend_loc = 'best',save = "scatter_gene_cluster_{}.png".format(gene))
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "Condition",legend_loc = 'best',save = "scatter_gene_condition_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "Condition",legend_loc = 'best',save = "scatter_gene_condition_{}.png".format(gene), palette = color_dict)
 		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "celltype_Condition",legend_loc = 'best',save = "scatter_gene_celltype_{}.png".format(gene))
 	except:
 		sys.stderr.write("{} not included".format(gene))
@@ -114,3 +132,4 @@ adata.write_h5ad(out_object)
 #completed timestamp
 end_time = datetime.datetime.now().timestamp()
 sys.stderr.write("finished in: " + str(round((end_time - begin_time)/60/60,2)) + " hours")
+

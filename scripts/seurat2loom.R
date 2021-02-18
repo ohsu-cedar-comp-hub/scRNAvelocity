@@ -3,7 +3,7 @@ library(Seurat)
 
 
 output_loom <- paste(getwd(),snakemake@output[["out_loom"]],sep="/")
-seurat_file <- paste(getwd(),snakemake@input[["seurat_file"]],sep="/")
+seurat_file <- snakemake@input[["seurat_file"]]
 
 seuratObj = readRDS(seurat_file)
 

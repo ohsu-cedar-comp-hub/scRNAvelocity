@@ -120,6 +120,8 @@ Sb = df_corrected.multiply(R)
 #Ub = corrected_data * (1-R)
 Ub = df_corrected.multiply((scipy.sparse.csr_matrix(np.ones(R.shape))-R))
 
+adata = adata[:,adata.var_names.isin(corrected_vars)]
+
 #add to adata object
 adata.layers["Ub"] = Ub
 adata.layers["Sb"] = Sb

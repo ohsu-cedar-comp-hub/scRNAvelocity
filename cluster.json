@@ -97,6 +97,72 @@
         "e" : "logs/{rule}/{rule}_%j.err",
         "c" : 8,
         "mem" : 48000
+    },
+	"correct_CB" :
+	 {
+        "t" : "6:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 2,
+        "mem" : 200000
+    },
+	"analyze_scvelo" :
+	 {
+        "t" : "18:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 2,
+        "mem" : 300000
+    },
+	"make_html" :
+	 {
+        "t" : "4:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 2,
+        "mem" : 200000
+    },
+	"notebook_ES" :
+	 {
+        "t" : "12:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 2,
+        "mem" : 200000
+    },
+	"notebook_all" :
+	 {
+        "t" : "12:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 2,
+        "mem" : 200000
+    },
+	"scvelo_combat" :
+	 {
+        "t" : "12:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 2,
+        "mem" : 200000
     }
 }
 

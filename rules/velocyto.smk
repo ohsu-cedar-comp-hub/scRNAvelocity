@@ -10,12 +10,13 @@ rule make_html:
 		seurat_cluster=config["seurat_cluster"],
 		genes=genes_of_interest,
 		wave = lambda wc: "{}".format(wc.wave),
-		out_dir="results/{wave}/Analyze"
+		out_dir="results/{wave}/Analyze",
+		contrast_name=config["contrast"]
 	conda:
 		"../envs/seurat.yml"
 	shell: 
 		"""
-		Rscript -e 'rmarkdown::render(\"./{params.script}\", output_file = \"../{output.html}\", params=list(inputobs = \"../{input.in_object}\", out_dir = \"../{params.out_dir}\", seurat=\"{params.seurat}\",contrast = \"{params.seurat_status}\",cluster = \"{params.seurat_cluster}\",genes=\"{params.genes}\",wave=\"{params.wave}\"))'
+		Rscript -e 'rmarkdown::render(\"./{params.script}\", output_file = \"../{output.html}\", params=list(inputobs = \"../{input.in_object}\", out_dir = \"../{params.out_dir}\", seurat=\"{params.seurat}\",contrast = \"{params.seurat_status}\",cluster = \"{params.seurat_cluster}\",genes=\"{params.genes}\",wave=\"{params.wave}\",contrast_name=\"{params.contrast_name}\"))'
 		"""
 
 rule analyze_scvelo:
@@ -24,12 +25,41 @@ rule analyze_scvelo:
 	output: 
 		out_object="results/{wave}/Analyze/scvelo_obs.tsv"
 	params:
-		genes=genes_of_interest
+		genes          = genes_of_interest,
+		seurat_status  = config["seurat_status"],
+		seurat_cluster = config["seurat_cluster"],
+		contrast_name  = config["contrast"],
+		color_hex      = Color_hex,
+		order_plot     = Order_plot
 	conda:
 		"../envs/scvelo_env.yaml"
 	script:
 		"../scripts/Analyze_Cluster_Condition.py"
 
+rule notebook_all:
+	input:
+		velocity_loom = "results/{wave}/sorted_merged_filtered.loom"
+	output:
+		output_file="results/{wave}/notebook/scvelo_down_sampled_all_stage.h5ad"
+	conda:
+		"../envs/scvelo_pro.yml"
+	log:
+		notebook = "results/{wave}/notebook/processed_notebook_all.ipynb"
+	notebook:
+		"../notebooks/cellrank_allstage.py.ipynb"
+
+rule notebook_ES:
+	input:
+		velocity_loom = "results/{wave}/sorted_merged_filtered.loom"
+	output:
+		output_file="results/{wave}/notebook/early_stage.h5ad"
+	conda:
+		"../envs/scvelo_pro.yml"
+	log:
+		notebook = "results/{wave}/notebook/processed_notebook_ES.ipynb"
+	notebook:
+		"../notebooks/cellrank_earlystage.py.ipynb"
+		
 rule scvelo_batch:
 	input:
 		velocity_loom = "results/{wave}/sorted_merged_filtered.loom",
@@ -43,6 +73,16 @@ rule scvelo_batch:
 		"../envs/scvelo.yaml"
 	script:
 		"../scripts/scvelo.py"
+
+rule scvelo_combat:
+	input:
+		loom_file = "results/{wave}/sorted_merged_filtered.loom"
+	output: 
+		out_file = "results/{wave}/scvelo_batch_combat.h5ad"
+	conda:
+		"../envs/scvelo_pro.yaml"
+	script:
+		"../scripts/batch_correct.py"
 
 
 rule scvelo:
@@ -77,19 +117,7 @@ rule scvelo_ind:
 	script:
 		"../scripts/scvelo_ind.py"
 	
-rule plot_velocity:
-	input:
-		velocity_loom = "results/{wave}/{seurat}/sorted_merged_filtered.loom",
-		seurat_loom = "results/seurat.loom"
-	output: 
-		out_plot="results/{wave}/velocity_plot.png"
-	params:
-		seurat_cluster=config["seurat_cluster"]
-	conda:
-		"../envs/velocity.yml"
-	script:
-		"../scripts/plot_velocity.py"
-		
+
 rule correct_CB:
 	input:
 		velocity_loom = ancient("results/{wave}/looms/sorted_merged.loom"),
@@ -127,6 +155,25 @@ rule loom_merge:
 	script:
 		"../scripts/merge_looms.py"
 
+rule get_veloctyo_version:
+	output:
+		"logs/velocyto_version.txt"
+	conda:
+		"../envs/velocity.yml"
+	shell:
+		"""
+		velocyto --version > {output}
+		"""
+
+rule get_scvelo_version:
+	output:
+		"logs/versions.txt"
+	conda:
+		"../envs/scvelo.yaml"
+	shell:
+		"""
+		conda list >> {output}
+		"""		
 
 rule RNAvelocity:
 	input:
