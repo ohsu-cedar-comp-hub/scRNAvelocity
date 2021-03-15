@@ -19,9 +19,10 @@ PATHS = []
 UNIQ = []
 
 
-genes_of_interest = ["RUNX1","CD74","MIF","FOS","CCL2", "PU.1", "TLR4", "TLR2","CD44", "SRC", "PI3K","AKT", "TEN", "JAB1", "CXCL8", "MAPK", "ERK", "SPI1", "STAT3", "STAT5", "NFKb", "CXCR1/2","CXCR1","CXCR2",  "JUN", "GATA1"]
-seurat_cb_correction = '-1_'
-
+#genes_of_interest = ["RUNX1","CD74","MIF","FOS","CCL2", "PU.1", "TLR4", "TLR2","CD44", "SRC", "PI3K","AKT", "TEN", "JAB1", "CXCL8", "MAPK", "ERK", "SPI1", "STAT3", "STAT5", "NFKb", "CXCR1/2","CXCR1","CXCR2",  "JUN", "GATA1"]
+seurat_cb_correction = '_'
+genes_of_interest = ["MYC","CEBPA","CEBPE","IRF8","GFI1","Prom1","Itgam","E2F3","Ly6g","E2F3","CDK6","CCND2","KIT","Rpl37","Eef2"]
+genes_of_interest = [x[0].upper() + x[1:].lower() for x in genes_of_interest] #mouseify gene names
 
 PATH_by_wave = {}
 Index_by_wave = {}
@@ -96,9 +97,8 @@ rule all:
 		#expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
 		#expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
 		#expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
-		#expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
+		expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
 		expand("results/{wave}/Analyze/scvelo_obs.tsv",wave = WAVES),
 		expand("results/{wave}/Analyze/scvelo_analysis.html", wave = WAVES)
-		
-		
+
 include: "rules/velocyto.smk"

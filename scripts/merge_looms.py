@@ -5,7 +5,7 @@ import glob
 ####################
 # GLOBAL VARIABLES #
 ####################
-input_files = snakemake.input #["file1.loom","file2.loom", ... ]
+input_files = snakemake.input.input_list #["file1.loom","file2.loom", ... ]
 output_filename = snakemake.output[0]
 
 #loom_files = [str(file) for file in input_files]

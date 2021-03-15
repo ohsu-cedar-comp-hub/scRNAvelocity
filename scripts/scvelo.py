@@ -10,7 +10,6 @@ import scvelo as scv
 curr_dir = os.getcwd()
 begin_time = datetime.datetime.now().timestamp()
 velocity_loom = snakemake.input.velocity_loom
-seurat_loom = snakemake.input.seurat_loom
 genes_of_interest = snakemake.params.genes
 out_object = snakemake.output.out_object
 out_dir = os.path.dirname(out_object)
@@ -19,7 +18,7 @@ out_dir = os.path.dirname(out_object)
 
 #scvelo documentation
 #https://readthedocs.org/projects/scvelo/downloads/pdf/latest/
-
+condition = snakemake.params.seurat_status
 
 #ds = loompy.connect(seurat_loom,mode = "r") #seurat object to loom ... in r 'as.loom(seuratObj, filename = "seuratObj.loom") 
 adata = scv.read(velocity_loom)
@@ -50,7 +49,8 @@ scv.tl.velocity(adata)
 
 #project velocities onto umap
 scv.tl.velocity_graph(adata)
-scv.pl.velocity_embedding_stream(adata, basis='umap', color = 'cluster', save = "scvelo_stream.png")
+color_pal = dict(zip(adata.obs["cluster"],adata.obs["ClusterID_color"]))
+scv.pl.velocity_embedding_stream(adata, basis='umap', color = 'cluster', save = "scvelo_stream.png", palette = color_pal)
 scv.pl.velocity_embedding(adata, basis='umap', color = 'cluster', arrow_length=3, arrow_size=2, dpi=120, save = "scvelo_embedding.png")
 scv.pl.velocity_embedding_grid(adata,basis='umap', color = 'cluster', save = "scvelo_grid.png")
 
@@ -80,9 +80,23 @@ df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 #df = scv.DataFrame(adata.uns['rank_velocity_genes']['names'])
 #df.to_csv("rank_velocity_genes_by_cluster.tsv",sep="\t")
 
+#scv.tl.velocity_pseudotime(adata) #, groupby = "cluster")
+
+#scv.pl.scatter(adata, color='velocity_pseudotime', color_map='gnuplot', save = "pseudotime.png")
 #scv.tl.rank_velocity_genes(adata, groupby='samples', min_corr=.3)
 #df = scv.DataFrame(adata.uns['rank_velocity_genes']['names'])
 #df.to_csv("rank_velocity_genes_by_samples.tsv",sep="\t")
+
+#We can visualize the velocity graph to portray all velocity-inferred cell-to-cell connections/transitions
+#for i in np.arange(0.1,1,step=.1):
+#		i = np.round(i,1)
+#		scv.pl.velocity_graph(adata, color = "cluster", palette = color_pal, threshold=i, save = "velo_graph_analysis{}.png".format(int(i*10)))
+#Further, the graph can be used to draw descendents/anscestors coming from a specified cell. Here, a pre-endocrine cell is traced to its potential fate.
+#x, y = scv.utils.get_cell_transitions(adata, basis='umap', starting_cell=70)
+#ax = scv.pl.velocity_graph(adata, c='lightgrey', edge_width=.05, show=False)
+#ax = scv.pl.scatter(adata, x=x, y=y, s=120, c='ascending', cmap='gnuplot', ax=ax)
+
+#
 
 # Likelihood ratio test for differential kinetics to detect clusters/lineages that display kinetic behavior that cannot be sufficiently explained by a single model for the overall dynamics
 #scv.tl.differential_kinetic_test(adata, var_names = 'velocity_genes', groupby='cluster')
@@ -91,8 +105,8 @@ df.to_csv("velo_confidence_cluster.tsv",sep="\t")
 for gene in genes_of_interest:
 	try:
 		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "cluster",legend_loc = 'best',save = "scatter_gene_cluster_{}.png".format(gene))
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "Condition",legend_loc = 'best',save = "scatter_gene_condition_{}.png".format(gene))
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "celltype_Condition",legend_loc = 'best',save = "scatter_gene_celltype_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = condition,legend_loc = 'best',save = "scatter_gene_condition_{}.png".format(gene))
+		#scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "celltype_Condition",legend_loc = 'best',save = "scatter_gene_celltype_{}.png".format(gene))
 	except:
 		sys.stderr.write("{} not included".format(gene))
 

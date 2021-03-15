@@ -24,7 +24,9 @@ rule analyze_scvelo:
 	output: 
 		out_object="results/{wave}/Analyze/scvelo_obs.tsv"
 	params:
-		genes=genes_of_interest
+		genes=genes_of_interest,
+		seurat_status=config["seurat_status"],
+		seurat_cluster=config["seurat_cluster"]
 	conda:
 		"../envs/scvelo_env.yaml"
 	script:
@@ -32,8 +34,7 @@ rule analyze_scvelo:
 
 rule scvelo_batch:
 	input:
-		velocity_loom = "results/{wave}/sorted_merged_filtered.loom",
-		seurat_loom = "results/seurat.loom"
+		velocity_loom = "results/{wave}/looms/sorted_merged_filtered.loom"
 	output: 
 		out_object="results/{wave}/scvelo_object_batch.h5ad"
 	params:
@@ -47,12 +48,13 @@ rule scvelo_batch:
 
 rule scvelo:
 	input:
-		velocity_loom = ancient("results/{wave}/sorted_merged_filtered.loom"),
-		seurat_loom = "results/seurat.loom"
+		velocity_loom = ancient("results/{wave}/looms/sorted_merged_filtered.loom")
 	output: 
 		out_object="results/{wave}/scvelo_object.h5ad"
 	params:
-		genes=genes_of_interest
+		genes=genes_of_interest,
+		seurat_status=config["seurat_status"],
+		seurat_cluster=config["seurat_cluster"]
 	conda:
 		"../envs/scvelo.yaml"
 	script:
@@ -60,10 +62,11 @@ rule scvelo:
 
 rule scvelo_ind:
 	input:
-		subset_CB=ancient(lambda wc:"{sample}/velocyto/{sample_name}.loom".format(sample = PATH_by_base[wc.sample_name], sample_name = wc.sample_name)),
-		seurat_loom="results/seurat.loom"
+		subset_CB=lambda wc:ancient("{sample}/velocyto/{sample_name}.loom".format(sample = PATH_by_base[wc.sample_name], sample_name = wc.sample_name)),
+		seurat_loom=ancient("results/seurat.loom")
 	output:
-		out_object="results/ind/{sample_name}/ind_scvelo_object.h5ad"
+		out_object="results/ind/{sample_name}/ind_scvelo_object.h5ad",
+		obser = "results/ind/{sample_name}/scvelo_obs.tsv"
 	params:
 		indices = lambda wc: Index_by_base[wc.sample_name],
 		subset_CB=lambda wc:"{}".format(wc.sample_name),
@@ -77,25 +80,14 @@ rule scvelo_ind:
 	script:
 		"../scripts/scvelo_ind.py"
 	
-rule plot_velocity:
-	input:
-		velocity_loom = "results/{wave}/{seurat}/sorted_merged_filtered.loom",
-		seurat_loom = "results/seurat.loom"
-	output: 
-		out_plot="results/{wave}/velocity_plot.png"
-	params:
-		seurat_cluster=config["seurat_cluster"]
-	conda:
-		"../envs/velocity.yml"
-	script:
-		"../scripts/plot_velocity.py"
+
 		
 rule correct_CB:
 	input:
 		velocity_loom = ancient("results/{wave}/looms/sorted_merged.loom"),
-		seurat_loom = "results/seurat.loom"
+		seurat_loom = ancient("results/seurat.loom")
 	output:
-		out_file="results/{wave}/sorted_merged_filtered.loom"
+		out_file="results/{wave}/looms/sorted_merged_filtered.loom"
 	params:
 		indices = lambda wc: Lookup_index[wc.wave],
 		seurat_cluster=config["seurat_cluster"],
@@ -110,7 +102,7 @@ rule correct_CB:
 rule seurat_to_loom:
 	input:
 		seurat_file=config["seuratObj"]
-	output: 
+	output:
 		out_loom="results/seurat.loom"
 	conda:
 		"../envs/seurat.yaml"
@@ -118,9 +110,9 @@ rule seurat_to_loom:
 		"../scripts/seurat2loom.R"
 
 rule loom_merge:
-	input:  
-		input_list = ancient(lambda wc: expand("{locs}/velocyto/{base}.loom",zip, locs = PATH_by_wave[wc.wave], base = [os.path.basename(x) for x in PATH_by_wave[wc.wave]])),
-		scvelo_ind = ancient(lambda wc: expand("results/ind/{base}/ind_scvelo_object.h5ad", base = [os.path.basename(x) for x in PATH_by_wave[wc.wave]]))
+	input:
+		input_list = lambda wc: [ancient(x) for x in expand("{locs}/velocyto/{base}.loom",zip, locs = PATH_by_wave[wc.wave], base = [os.path.basename(x) for x in PATH_by_wave[wc.wave]])],
+		scvelo_ind = lambda wc: [ancient(x) for x in expand("results/ind/{base}/ind_scvelo_object.h5ad", base = [os.path.basename(x) for x in PATH_by_wave[wc.wave]])]
 	output: "results/{wave}/looms/sorted_merged.loom"
 	conda:
 		"../envs/velocity.yml"
@@ -130,7 +122,7 @@ rule loom_merge:
 
 rule RNAvelocity:
 	input:
-		ancient("{sample}/outs/cellsorted_possorted_genome_bam.bam")
+		"{sample}/outs/cellsorted_possorted_genome_bam.bam"
 	output:
 		"{sample}/velocyto/{base}.loom"
 	params:
@@ -148,7 +140,7 @@ rule RNAvelocity:
 		  
 rule samtools_sort:
 	input:
-		ancient("{sample}/outs/possorted_genome_bam.bam")
+		"{sample}/outs/possorted_genome_bam.bam"
 	output:
 		"{sample}/outs/cellsorted_possorted_genome_bam.bam"
 	conda:

@@ -13,13 +13,16 @@ begin_time = datetime.datetime.now().timestamp()
 
 sys.stderr.write("beginning scvelo!")
 velocity_loom = snakemake.input.velocity_loom
-seurat_loom = snakemake.input.seurat_loom
+
 
 sample_batch = snakemake.params.seurat_sample
 
 out_object = snakemake.output.out_object
 out_dir = os.path.dirname(out_object)
 genes_of_interest = snakemake.params.genes
+
+condition = snakemake.params.seurat_status
+
 #walkthrough
 #https://colab.research.google.com/github/theislab/scvelo_notebooks/blob/master/VelocityBasics.ipynb#scrollTo=iHl8jdCUd1j8
 
@@ -103,8 +106,8 @@ df.to_csv("velo_confidence_cluster_batch.tsv",sep="\t")
 for gene in genes_of_interest:
 	try:
 		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "cluster",legend_loc = 'best',save = "batch_scatter_gene_cluster_{}.png".format(gene))
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "Condition",legend_loc = 'best',save = "batch_scatter_gene_condition_{}.png".format(gene))
-		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "celltype_Condition",legend_loc = 'best',save = "batch_scatter_gene_celltype_{}.png".format(gene))
+		scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = condition,legend_loc = 'best',save = "batch_scatter_gene_condition_{}.png".format(gene))
+		#scv.pl.velocity(adata,str(gene), dpi = 120, figsize = (7,5), color = "celltype_Condition",legend_loc = 'best',save = "batch_scatter_gene_celltype_{}.png".format(gene))
 	except:
 		sys.stderr.write("{} not included".format(gene))
 

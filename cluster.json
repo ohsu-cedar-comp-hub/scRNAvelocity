@@ -97,6 +97,39 @@
         "e" : "logs/{rule}/{rule}_%j.err",
         "c" : 8,
         "mem" : 48000
+    },
+	"analyze_scvelo" :
+	 {
+        "t" : "24:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 8,
+        "mem" : 48000
+    },
+	"make_html" :
+	 {
+        "t" : "12:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 8,
+        "mem" : 48000
+    },
+	"correct_CB" :
+	 {
+        "t" : "12:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 8,
+        "mem" : 200000
     }
 }
 

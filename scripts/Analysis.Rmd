@@ -15,6 +15,7 @@ params:
   cluster: "predicted.id"
   wave: "current wave"
   out_dir: "/path/to/out"
+  
 ---
 
 ```{r setup, include=FALSE}
@@ -33,6 +34,8 @@ library(rlang)
 library(plotly)
 library(ggrepel)
 library(ggpubr)
+library(knitr)
+library(DT)
 
 contrast <- params$contrast
 
@@ -43,12 +46,8 @@ seurat_cluster <- params$cluster
 outdir = dirname(paste(getwd(),params$out_dir,sep="/"))
 wave = params$wave
 
-######################################### Custom Color
-Color_hex = c("#67CAD4","#B0207E") #purple for FPD, teal for HD
-Order_plot = c("HD","FPD")
-names(Color_hex) = Order_plot
 
-#####################################
+
 ```
 
 ```{r echo = F, message = F, warning= F}
@@ -261,29 +260,41 @@ Transcriptional induction for a particular gene results in an increase of (newly
 ```{r echo=F,warning=F,message=F,error = F, include = F}
 
 run2process <- read.delim(sprintf("../input/%s_locations.tsv",wave), header = T)
-samples_seurat <- c()
-for (i in 1:dim(run2process)[1]){
-		samples_seurat <- c(samples_seurat,as.character(run2process[i,2]))
-}		
+sample_cells <- c()
 seuratObj <- readRDS(seurat)
-seuratObj <- subset(seuratObj, cells = Cells(seuratObj)[which(endsWith(Cells(seuratObj), samples_seurat))])
+for (i in 1:dim(run2process)[1]){
+		sample_cells <- c(sample_cells,names(which(sapply(Cells(seuratObj),function(x) { unlist(strsplit(x,"_"))[2]}) == as.character(run2process[i,2]))))
+}
 
+seuratObj <- subset(seuratObj, cells = sample_cells)
+Color_hex <- seuratObj@misc$colors.ls$tp_gt$tp_gt.col
+names(Color_hex) <- unname(sapply(names(Color_hex), function(x) { paste(unlist(strsplit(x,"_"))[2],unlist(strsplit(x,"_"))[1],sep = "_")}))
+Order_plot <- names(Color_hex)
+
+GOI <- list()
 DefaultAssay(seuratObj) <- "RNA"
 
-seuratObj[[contrast]] <- factor(x = seuratObj[[contrast]][,1],levels = Order_plot)
-base_path <- paste(outdir,"figures",sep="/")
+#seuratObj[[contrast]] <- factor(x = seuratObj[[contrast]][,1],levels = Order_plot)
+base_path <- paste(outdir,"Analyze","figures",sep="/")
 for (clust in unique_clusters){
 	keep_cells <- rownames(seuratObj[[seurat_cluster]])[which(seuratObj[[seurat_cluster]] == clust)]
 	sub_seurat <- subset(seuratObj, cells = keep_cells)
-	for (gene in genes_of_interest){
-		file_path <- paste(base_path,sprintf("VlnPlot_%s_%s_exp.png",clust,gene),sep="/")
+	top_velocity <- try(read.delim(sprintf("%s/../top_%s_velocity_genes.tsv",base_path,gsub("/",".",clust))))
+	if(class(top_velocity) != "try-error"){
+		GOI[[as.character(clust)]] <- sort(unique(c(genes_of_interest,as.character(head(top_velocity[,2],n=10)),as.character(head(top_velocity[,3],n=10)),as.character(tail(top_velocity[,2],n=10)),as.character(tail(top_velocity[,3],n=10)))))
+	} else {
+		GOI[[as.character(clust)]] <- genes_of_interest
+	}
+	#genes_of_interest <- unique(c(genes_of_interest,top_velocity[nrow(top_velocity)-10:nrow(top_velocity),2],top_velocity[1:10,2]))
+	for (gene in GOI[[as.character(clust)]]){
+		file_path <- paste(base_path,sprintf("VlnPlot_%s_%s_exp.png",gsub("/",".",clust),gene),sep="/")
 		if(!(file.exists(file_path))){
 			p_plot <- try(pplot <- VlnPlot_stats(sub_seurat, group_by = contrast, gene_signature = gene, color = Color_hex))
 			if(class(p_plot) != "try-error"){
 				ggsave(basename(file_path), plot = p_plot, path = dirname(file_path), device = "png")
 			}
 		}
-		file_path <- paste(base_path,sprintf("FeaturePlot_%s_%s_exp.png",clust,gene),sep="/")
+		file_path <- paste(base_path,sprintf("FeaturePlot_%s_%s_exp.png",gsub("/",".",clust),gene),sep="/")
 		if(!(file.exists(file_path))){
 			p_plot <- try(pplot <- FeaturePlot(sub_seurat, features = gene, split.by = contrast))
 			if(class(p_plot) != "try-error"){
@@ -292,6 +303,8 @@ for (clust in unique_clusters){
 		}
 	}
 }
+
+
 
 ```
 
@@ -304,19 +317,19 @@ base_path <- paste(outdir,"figures",sep="/")
 for (clust in unique_clusters){
 	scvelo_sub <- subset(scvelo, cluster == clust)
 	cat("\n### ",clust," {.tabset .tabset-fade .tabset-pills}\n")
-	file_path <- paste(base_path,"..","Analyze/figures",sprintf("stats_velocity_length_%s.png",clust),sep="/")
+	file_path <- paste(base_path,"..","Analyze/figures",sprintf("stats_velocity_length_%s.png",gsub("/",".",clust)),sep="/")
 		if(file.exists(file_path)){
 			cat('\n![By Condition](',file_path,')\n\n')
 		}
 	
 		
-	file_path <- paste(base_path,"..","Analyze/figures",sprintf("violinorig_velocity_length_%s.png",clust),sep="/")	
-	if(file.exists(file_path)){
-			cat('\n![By Sample](',file_path,')\n\n')
-		}
+	#file_path <- paste(base_path,"..","Analyze/figures",sprintf("violinorig_velocity_length_%s.png",gsub("/",".",clust)),sep="/")	
+	#if(file.exists(file_path)){
+	#		cat('\n![By Sample](',file_path,')\n\n')
+	#	}
 	
 	
-	file_path <- paste(base_path,sprintf("bar_plot_%s_clust.png",clust),sep="/")
+	file_path <- paste(base_path,sprintf("bar_plot_%s_clust.png",gsub("/",".",clust)),sep="/")
 	if(!(file.exists(file_path))){
 		cur_prop <- subset(scvelo, cluster == clust)
 		
@@ -328,35 +341,58 @@ for (clust in unique_clusters){
 	if(file.exists(file_path)){
 		cat('\n![Bar Plot](',file_path,')\n\n')
 	}
-	
+	genes_of_interest <- GOI[[as.character(clust)]]
 	for (i in 1:length(genes_of_interest)){
 		cur_gene <- genes_of_interest[i]
 		
-		file_path <- paste(base_path,"..","Analyze/figures",sprintf("scvelo_scatter_gene_cluster_%s_%s.png",clust,cur_gene),sep="/")
+		file_path <- paste(base_path,"..","Analyze/figures",sprintf("scvelo_scatter_gene_cluster_%s_%s.png",gsub("/",".",clust),cur_gene),sep="/")
 		if(file.exists(file_path)){
 			cat("\n\n#### ",cur_gene,"\n\n")
 			cat('\n![Scatter](',file_path,')\n\n')
 		}
-		
-		file_path <- paste(base_path,sprintf("VlnPlot_%s_%s_exp.png",clust,cur_gene),sep="/")
+			
+		file_path <- paste(base_path,"../Analyze/figures",sprintf("VlnPlot_%s_%s_exp.png",gsub("/",".",clust),cur_gene),sep="/")
 		if(file.exists(file_path)){
 			
 			cat('\n![Violin Plot](',file_path,')\n\n')
 		}
-		file_path <- paste(base_path,sprintf("FeaturePlot_%s_%s_exp.png",clust,cur_gene),sep="/")
+		file_path <- paste(base_path,"../Analyze/figures",sprintf("FeaturePlot_%s_%s_exp.png",gsub("/",".",clust),cur_gene),sep="/")
 		if(file.exists(file_path)){
 			
 			cat('\n![Feature Plot](',file_path,')\n\n')
 		}
 	}
-
+	
+	file_path <- sprintf("%s/../Analyze/top_%s_velocity_genes.tsv",base_path,gsub("/",".",clust))
+	top_velocity <- try(read.delim(file_path))
+	if (class(top_velocity) != "try-error"){
+		print(kable(top_velocity))
+	}
 }
+```
+
+# Velocity DE scores table
+
+This applies a differential expression test (Welch t-test with overestimated variance to be conservative) on velocity expression, to find genes in a cluster that show dynamics that is transcriptionally regulated differently compared to all other clusters (e.g. induction in that cluster and homeostasis in remaining population).
+
+A positive high score indicates that the velocity of that gene in the cluster is high compared to that gene in other clusters.
+
+
+
+```{r ta_vel, echo = F, warning = F}
+v_table <- read.delim(paste(outdir,"Analyze","top_cluster_velocity_genes.tsv",sep="/"))
+
+datatable(v_table)
 ```
 
 
 
 
+# Session Info
 
+```{r echo = F}
+sessionInfo()
+```
 
 
 
