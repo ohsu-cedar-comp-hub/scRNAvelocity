@@ -8,9 +8,8 @@ Runs velocyto on multiple 10x outputs from cellranger to project trajectory arro
 
 ## Setup
 
-Put the seurat object rds file in the **input** directory with *.rds* extension.
 
-Add 10x paths into the "paths.tsv" file in the input directory.
+Add 10x paths into the "[name without underscores]_locations.tsv" file in the input directory.
 
 SAMPLE:
 ```
@@ -23,6 +22,7 @@ The "outs" directory from 10x cellranger would be a sub-directory of the "/PATH/
 
 
 Add the paths in the *omic_config.yaml* for the GTF files.
+As well as the path to the seurat object with an *.rds* extension.
 
 
 Repeat masker downloaded from [UCSC](https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=611454127_NtvlaW6xBSIRYJEBI0iRDEWisITa&clade=mammal&org=&db=hg38&hgta_group=allTracks&hgta_track=rmsk&hgta_table=rmsk&hgta_regionType=genome&position=&hgta_outputType=gff&hgta_outFileName=hg19_repeatmask.gtf). 
@@ -34,12 +34,28 @@ Reference gtf annotation files from 10x.
 
 The links are to hg19.
 
+Example omics file.
+
 *omic_config.yaml*
 ```
 GTF_ref:
     /path/to/10x.gtf
 repeat_mask:
     /path/to/repeat_masker.gtf
+seuratObj:
+    /path/to/seurat_object.rds
+seurat_cluster:
+    RNA_snn_res.0.8 # seurat meta data for naming clusters
+seurat_status:
+    Condition #seurat meta data for contrast to be analyzed
+seurat_batch:
+    orig.ident #seurat meta data for batch correction to be applied
+contrast:
+    FPD  #value from seurat_status to be used as contrast
+sam_mem:
+    50000 #memory allocation for sam tools
+n_cores:
+    8 #number of cores to provide certain algorithms
 ```
 
 
