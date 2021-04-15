@@ -36,29 +36,19 @@ rule analyze_scvelo:
 	script:
 		"../scripts/Analyze_Cluster_Condition.py"
 
-rule notebook_all:
+rule cellrank:
 	input:
-		velocity_loom = "results/{wave}/sorted_merged_filtered.loom"
+		velocity_adata = "results/{wave}/scvelo_object.h5ad"
 	output:
-		output_file="results/{wave}/notebook/scvelo_down_sampled_all_stage.h5ad"
-	conda:
-		"../envs/scvelo_pro.yml"
-	log:
-		notebook = "results/{wave}/notebook/processed_notebook_all.ipynb"
-	notebook:
-		"../notebooks/cellrank_allstage.py.ipynb"
+		output_file="results/{wave}/notebook/cellrank_object.h5ad"
+	params:
+		cell_environment = config['cr_environment']
+	shell:
+		"""
+		source activate {params.cell_environment};
+		python3 ../notebooks/cellrank_allstage.py.ipynb
+		"""
 
-rule notebook_ES:
-	input:
-		velocity_loom = "results/{wave}/sorted_merged_filtered.loom"
-	output:
-		output_file="results/{wave}/notebook/early_stage.h5ad"
-	conda:
-		"../envs/scvelo_pro.yml"
-	log:
-		notebook = "results/{wave}/notebook/processed_notebook_ES.ipynb"
-	notebook:
-		"../notebooks/cellrank_earlystage.py.ipynb"
 		
 rule scvelo_batch:
 	input:
@@ -74,15 +64,6 @@ rule scvelo_batch:
 	script:
 		"../scripts/scvelo.py"
 
-rule scvelo_combat:
-	input:
-		loom_file = "results/{wave}/sorted_merged_filtered.loom"
-	output: 
-		out_file = "results/{wave}/scvelo_batch_combat.h5ad"
-	conda:
-		"../envs/scvelo_pro.yaml"
-	script:
-		"../scripts/batch_correct.py"
 
 
 rule scvelo:

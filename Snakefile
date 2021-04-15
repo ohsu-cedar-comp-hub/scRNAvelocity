@@ -22,6 +22,10 @@ UNIQ = []
 genes_of_interest = ["RUNX1","CD74","MIF","FOS","CCL2", "PU.1", "TLR4", "TLR2","CD44", "SRC", "PI3K","AKT", "TEN", "JAB1", "CXCL8", "MAPK", "ERK", "SPI1", "STAT3", "STAT5", "NFKb", "CXCR1/2","CXCR1","CXCR2",  "JUN", "GATA1"]
 seurat_cb_correction = '-1_'
 
+#################  CUSTOM Colors ################################
+Color_hex = ["#67CAD4","#B0207E"] #purple for FPD, teal for HD
+Order_plot = ["HD","FPD"]
+
 
 PATH_by_wave = {}
 Index_by_wave = {}
@@ -88,15 +92,14 @@ def message(mes):
 for wave in WAVES:
 	message("10x files in " + wave + " will be processed")
 
-#sample_name = [os.path.basename(locations) for wave in WAVES for locations in PATH_by_wave[wave]]
-#seurat = os.path.splitext(os.path.basename(config["seuratObj"]))[0]	
+
 rule all:
 	input:
-		#expand("{sample}/velocyto/{base}.loom",zip, sample = PATHS, base = [os.path.basename(locations) for locations in PATHS]),
-		#expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
-		#expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
-		#expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
-		#expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
+		expand("{sample}/velocyto/{base}.loom",zip, sample = PATHS, base = [os.path.basename(locations) for locations in PATHS]),
+		expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
+		expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
+		expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
+		expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
 		expand("results/{wave}/Analyze/scvelo_obs.tsv",wave = WAVES),
 		expand("results/{wave}/Analyze/scvelo_analysis.html", wave = WAVES)
 		

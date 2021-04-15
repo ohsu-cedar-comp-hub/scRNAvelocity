@@ -50,9 +50,16 @@ prop_plot = scv.pl.proportions(adata, show = False)
 
 
 #filter genes, normalize per cell, filter genes dispersion, and scale (log1p)
-scv.pp.filter_and_normalize(adata, min_shared_counts=20, n_top_genes=None)
+#normalize and run velocity analysis
+scv.pp.filter_and_normalize(adata, n_top_genes=None, min_shared_counts = 20)
+#PCA
+scanpy.tl.pca(adata)
+#find knn 
+scanpy.pp.neighbors(adata, n_neighbors = 30, n_pcs = 30)
 #first and second order moments (means and uncentered variances) computed among nearest neighbors in PCA space, computes: pca and neighbors
-scv.pp.moments(adata, n_pcs=30, n_neighbors=30)
+scv.pp.moments(adata, n_pcs = 30, n_neighbors = 30)
+
+
 #default mode for velocity is stochastic,  mode = 'dynamical' and mode = "deterministic" are also available.   see https://scvelo.readthedocs.io/about.html
 scv.tl.recover_dynamics(adata)
 scv.tl.velocity(adata,mode = 'dynamical')
