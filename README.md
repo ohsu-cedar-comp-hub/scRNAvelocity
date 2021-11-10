@@ -56,8 +56,81 @@ sam_mem:
     50000 #memory allocation for sam tools
 n_cores:
     8 #number of cores to provide certain algorithms
+cr_environment:
+    /path/to/environment/cellrank #path to cell rank environment
+
+order_plot: #names of values in 'seurat_status' to be used for plotting
+    - HD
+    - FPD
+color_hex:  #colors to match with 'order_plot' entries
+    - '#67CAD4' 
+    - '#B0207E'
+order_cluster: #names of values in 'seurat_cluster' entry
+    - HSC
+    - Progenitor
+    - MKP
+    - GMP
+    - Pro-Mono
+    - Mono
+    - pDC
+    - cDC
+    - Early Eryth
+    - Late Eryth
+    - CLP
+    - Pro-B
+    - B
+    - Plasma
+    - CTL
+    - NK
+    - T
+    - Stroma
+cluster_hex: #colors to match with 'order_cluster' entrie
+    - '#F8766D'
+    - '#E88526'
+    - '#D39200'
+    - '#B79F00'
+    - '#93AA00'
+    - '#5EB300'
+    - '#00BA38'
+    - '#00BF74'
+    - '#00C19F'
+    - '#00BFC4'
+    - '#00B9E3'
+    - '#00ADFA'
+    - '#619CFF'
+    - '#AE87FF'
+    - '#DB72FB'
+    - '#F564E3'
+    - '#FF61C3'
+    - '#FF699C'
+clusters_of_interest: #clusters of interest. enteries are a subset of 'order_cluster'
+    - HSC
+    - Progenitor
+    - MKP
+    - GMP
+    - Mono    
 ```
 
+
+## Marker Directory
+
+Has output `tsv` files from Seurats `FindMarkers()` function. Format of the file names are as follows: 'DE.{}_FPD.{}_Healthy.Markers.txt' where the {} are place holders for the cluster/cell type from the `seurat_cluster` field.
+
+## Cell Rank
+
+Cell rank is installed as a python virtual environment separately and then referenced the path to the environment in the rule. A Mesasage passing interface (MPI) are required to leverage parallel computing.  Iie: `module load  /path/to/software/modules/openmpi/3.1.6-openib`.
+
+
+### cellrank installation: 
+
+```
+cd envs
+python3 -m venv cellrank
+cd cellrank
+source bin/activate
+pip install --upgrade pip
+pip install -r ../cellrank_requirements.txt
+```
 
 ## Test Build
 

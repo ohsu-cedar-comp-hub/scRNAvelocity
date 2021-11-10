@@ -1,30 +1,27 @@
+import argparse
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.manifold import TSNE
 import os
-import datetime
 import scvelo as scv
 import scanpy
 import sys
 import pandas as pd
 from scipy import stats
-#from statannot import add_stat_annotation
-from functools import reduce
-import seaborn as sns
-import statsmodels.api as sm
 import cellrank as cr
-import plotly
-
 import mpi4py
 
-
-
-
+parser = argparse.ArgumentParser(description='Cellrank')
+parser.add_argument('input_file', type=str, 
+                    help='path to h5ad file for input')
+parser.add_argument('output_file', type=str, 
+                    help='path to h5ad output file')
+args = parser.parse_args()
 
 def main():
-    velocity_adata = snakemake.input.velocity_adata
-    adata = scv.read(velocity_adata)
 
+    velocity_adata = args.input_file
+    adata = scv.read(velocity_adata)
+    """
     #### project specific variables ####
     heatmap_genes = ["MEIS1","EGR1","MSI2","CD34","EGFL7","CD38","MPO","ELANE","CTSG","AZU1","LYZ","CEBPD","MNDA","FCER1G","FCN1","CD14","C5AR1","CLEC4A","CLEC10A","FCER1A","CLEC4C","PTPRS","IRF8","TCF4","CSF1","KIT","HBB","HBD","GYPA","CD24","EBF1","MME","CD19","CD79A","MS4A1","BANK1","MZB1","IGLL5","JCHAIN","CD3D","CD3G","IL32","IL7R","CCL5","GZMK","CD8A","KLRB1","KLRD1","GZMB","NCAM1"]
     # color for project
@@ -43,12 +40,12 @@ def main():
     "MKP":"MKP"}
     adata.obs["lineages"] = [lineages[key] for key in adata.obs["cluster"]]
     adata.obs["cluster_cond"] = ["{}_{}".format(x,y) for x,y in zip(adata.obs["cluster"],adata.obs["Condition"])] #combine cluster and conditions
-    
+    """
     
     ###determine terminal and initial states
-    cr.tl.terminal_states(adata, cluster_key='clusters', n_states = 12, weight_connectivities=0.2)
+    cr.tl.terminal_states(adata, cluster_key='cluster', n_states = 12, weight_connectivities=0.2)
     
-    cr.tl.initial_states(adata, cluster_key='clusters')
+    cr.tl.initial_states(adata, cluster_key='cluster')
     ## determine lineages
     cr.tl.lineages(adata)
     #recover latent time
@@ -56,14 +53,14 @@ def main():
     #determine lineage drivers
     cr.tl.lineage_drivers(adata, cluster_key = "cluster", seed = 0)
     
-    #diffusion pseudotime
+    #diffusion pseudotime starts at HSC cluster
     root_idx = np.where(adata.obs['cluster'] == 'HSC')[0][0]
 
     scanpy.tl.diffmap(adata)
     adata.uns['iroot'] = root_idx
     scanpy.tl.dpt(adata)
     # save object
-    adata.write_h5ad(snakemake.output.output_file)
+    adata.write_h5ad(args.output_file)
     
 if __name__ == '__main__':
     main()
