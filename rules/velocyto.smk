@@ -36,7 +36,7 @@ rule pseudotime_r:
         color_names = config["order_plot"],
         color_hex = config["color_hex"]
     conda:
-        "../envs/seurat_note.yaml"
+        "../envs/r_note.yaml"
     log:
         notebook="results/{wave}/R_line_processed.ipynb"
     notebook:
@@ -60,7 +60,7 @@ rule pseudotime_py:
 
 rule analyze_scvelo:
     input:
-        in_object="results/{wave}/scvelo_object.h5ad"
+        in_object="results/{wave}/cellrank_object.h5ad"
     output:
         out_object="results/{wave}/scvelo_obs.tsv",
         adata_out ="results/{wave}/scvelo_analysis.h5ad"
@@ -83,7 +83,7 @@ rule analyze_scvelo:
 
 rule cellrank:
     input:
-        velocity_adata = "results/{wave}/scvelo_analysis.h5ad"
+        velocity_adata = "results/{wave}/scvelo_object.h5ad"
     output:
         output_file="results/{wave}/cellrank_object.h5ad"
     params:

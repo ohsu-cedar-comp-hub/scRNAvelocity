@@ -96,13 +96,13 @@ for wave in WAVES:
 
 rule all:
     input:
-        #expand("logs/{environ}_versions.txt", environ = ENVS),
-        #expand("{sample}/velocyto/{base}.loom",zip, sample = PATHS, base = [os.path.basename(locations) for locations in PATHS]),
-        #expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
-        #expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
-        #expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
-        #expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
+        
+        expand("{sample}/velocyto/{base}.loom",zip, sample = PATHS, base = [os.path.basename(locations) for locations in PATHS]),
+        expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
+        expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
+        expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
+        expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
         expand("results/{wave}/scvelo_obs.tsv",wave = WAVES),
-       # expand("results/{wave}/scvelo_analysis.html", wave = WAVES)
+        expand("results/{wave}/scvelo_analysis.html", wave = WAVES)
 
 include: "rules/velocyto.smk"

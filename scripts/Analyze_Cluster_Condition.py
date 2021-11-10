@@ -330,7 +330,7 @@ def main():
                 #heatmap velocity plot
                 os.chdir(Velo_heat_files)
                 sys.stderr.write("\n attempting heatmap velocity\n")
-                heatmap_velocity(adata_subset, clust = str(clust), groupby = condition, sample = condition,gene = gene, nbins = 300, plot_max = True, order = Order_plot,save_path = "./figures" ,cmap = cmap)
+                heatmap_velocity(adata_subset, clust = str(clust), groupby = condition, sample = condition,gene = gene, nbins = 300, plot_max = True, order_plot = Order_plot,save_path = "./figures" ,cmap = cmap)
                 
                 #scatter velocity plot
                 # velocity or 'layer' on y-axis separated by groupby on x-axis 
