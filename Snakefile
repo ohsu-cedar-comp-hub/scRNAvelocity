@@ -36,6 +36,7 @@ Index_by_base = {}
 WAVES,=glob_wildcards('input/{wave}_locations.tsv')
 ENVS,=glob_wildcards('envs/{environ}.yaml')
 
+
 for wave in WAVES:
     with open('input/{wave}_locations.tsv'.format(wave = wave)) as file_in:
         Locations = []
@@ -86,7 +87,10 @@ for rule in rule_dirs:
         os.makedirs(log_out)
         print(log_out)
 
+clusters = [str(x) for x in config["order_cluster"]]
 
+
+    
 def message(mes):
     sys.stderr.write("|--- " + mes + "\n")
 
@@ -94,15 +98,16 @@ for wave in WAVES:
     message("10x files in " + wave + " will be processed")
 
 
+
 rule all:
     input:
-        
         expand("{sample}/velocyto/{base}.loom",zip, sample = PATHS, base = [os.path.basename(locations) for locations in PATHS]),
         expand("results/{wave}/looms/sorted_merged.loom",wave = WAVES),
         expand(["results/{wave}/scvelo_object_batch.h5ad"],wave = WAVES),
         expand(["results/{wave}/scvelo_object.h5ad"],wave = WAVES),
         expand("results/ind/{sample_name}/ind_scvelo_object.h5ad", sample_name = [os.path.basename(locations) for locations in PATHS]),
         expand("results/{wave}/scvelo_obs.tsv",wave = WAVES),
+        expand("results/DE_dir/Cluster_markers_all.tsv",wave = WAVES),
         expand("results/{wave}/scvelo_analysis.html", wave = WAVES)
 
 include: "rules/velocyto.smk"

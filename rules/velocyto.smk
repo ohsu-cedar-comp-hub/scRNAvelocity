@@ -2,8 +2,8 @@ rule make_html:
     input:
         "results/{wave}/scvelo_obs.tsv",
         "results/{wave}/cluster_colors.tsv",
-        "results/{wave}/scvelo_object_analysis/figures/pseudotime_dpt_r.pdf",
-        "results/{wave}/scvelo_object_analysis/figures/bar_pseudotime_dpt_lineplot.pdf"
+        "results/{wave}/scvelo_object_analysis/pseudotime_files/figures/pseudotime_dpt_r.pdf",
+        "results/{wave}/scvelo_object_analysis/pseudotime_files/figures/bar_pseudotime_dpt_lineplot.pdf"
     output: 
         html="results/{wave}/scvelo_analysis.html"
     params:
@@ -24,6 +24,65 @@ rule make_html:
         Rscript -e 'rmarkdown::render(\"./{params.script}\", output_file = \"../{output.html}\", params=list(inputobs = \"../{input[0]}\", out_dir = \"../{params.out_dir}\", seurat=\"{params.seurat}\",contrast = \"{params.seurat_status}\",cluster = \"{params.seurat_cluster}\",genes=\"{params.genes}\",wave=\"{params.wave}\",color_tsv=\"../{input[2]}\",clusters_of_interest=\"{params.clusters_of_interest}\",color_hex=\"{params.color_hex}\",color_names=\"{params.color_names}\"))'
         """
 
+rule seurat_downsample_DE:
+    input:
+        seurat_file=config["seuratObj"]
+    output:
+        output_file="results/DE_dir/Cluster_ds_markers.tsv"
+    params:
+        sample_set = config["seurat_downsample"]
+    conda:
+        "../envs/seurat.yaml"
+    script:
+        "../scripts/seurat_downsample_DE.R"
+
+rule veloin_plots:
+    input:
+        in_object="results/{wave}/cellrank_object.h5ad",
+        markers_file="results/DE_dir/Cluster_markers_all.tsv"
+    output:
+        output_file="results/{wave}/scvelo_object_analysis/veloin_plots.txt"
+    params:
+        seurat_status = config["seurat_status"],
+        color_hex = config["color_hex"],
+        order_plot = config["order_plot"],
+        cluster_hex = config["cluster_hex"],
+        order_cluster = config["order_cluster"],
+        markers_dir = config['markers_dir'],
+        clusters_of_interest = config["clusters_of_interest"],
+        genes = genes_of_interest,
+        out_dir = lambda wc: "results/{wave}/scvelo_object_analysis".format(wave = wc.wave)
+    conda:
+        "../envs/scvelo.yaml"
+    script:
+        "../scripts/veloinplots.py"
+
+rule combine_DE:
+    input:
+        ["results/DE_dir/{}_markers.tsv".format(cluster) for cluster in clusters]
+    output:
+       output_file = "results/DE_dir/Cluster_markers_all.tsv"
+    params:
+        ext = "\t"
+    conda:
+        "../envs/scvelo.yaml"
+    script:
+        "../scripts/concat_files.py"
+
+rule seurat_DE:
+    input:
+        seurat_file=config["seuratObj"]
+    output:
+        output_file="results/DE_dir/{cluster}_markers.tsv"
+    params:
+        cluster = lambda wc: "{}".format(wc.cluster),
+        output_dir = "results/DE_dir"
+    conda:
+        "../envs/seurat.yaml"
+    script:
+        "../scripts/seurat_DE.R"
+
+        
 rule pseudotime_r:
     input:
         input_tsv = "results/{wave}/scvelo_obs.tsv",

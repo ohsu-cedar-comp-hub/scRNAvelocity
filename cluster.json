@@ -96,7 +96,29 @@
         "o" : "logs/{rule}/{rule}_%j.out",
         "e" : "logs/{rule}/{rule}_%j.err",
         "c" : 8,
-        "mem" : 48000
+        "mem" : 200000
+    },
+	"seurat_DE" :
+	{
+        "t" : "6:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 4,
+        "mem" : 200000
+    },
+	"seurat_downsample_DE" :
+	{
+        "t" : "3:00:00",
+        "N" : 1,
+        "partition" : "exacloud",
+        "J" : "{rule}",
+        "o" : "logs/{rule}/{rule}_%j.out",
+        "e" : "logs/{rule}/{rule}_%j.err",
+        "c" : 4,
+        "mem" : 200000
     },
 	"make_html" :
 	{

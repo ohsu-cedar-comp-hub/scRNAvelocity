@@ -7,7 +7,76 @@ repeat_mask:
 sam_mem:
     50000
 seurat_cluster:
-    CelltypeProgenitor_2
-seurat_sample:
+    predicted
+seurat_status:
     Condition
-
+seurat_batch:
+    orig.ident
+contrast:
+    FPD
+color_hex:
+    - '#67CAD4'
+    - '#B0207E'
+order_plot:
+    - HD
+    - FPD
+order_cluster:
+    - HSC
+    - Progenitor
+    - MKP
+    - GMP
+    - Pro-Mono
+    - Mono
+    - pDC
+    - cDC
+    - Early Eryth
+    - Late Eryth
+    - CLP
+    - Pro-B
+    - B
+    - Plasma
+    - CTL
+    - NK
+    - T
+    - Stroma
+cluster_hex:
+    - '#F8766D'
+    - '#E88526'
+    - '#D39200'
+    - '#B79F00'
+    - '#93AA00'
+    - '#5EB300'
+    - '#00BA38'
+    - '#00BF74'
+    - '#00C19F'
+    - '#00BFC4'
+    - '#00B9E3'
+    - '#00ADFA'
+    - '#619CFF'
+    - '#AE87FF'
+    - '#DB72FB'
+    - '#F564E3'
+    - '#FF61C3'
+    - '#FF699C'
+clusters_of_interest:
+    - HSC
+    - Progenitor
+    - MKP
+    - GMP
+    - Mono
+markers_dir:
+     /home/groups/CEDAR/chitsazan/Projects/Anupriya/RThings/Paper_Objects/DE_BM_Paper/DE_ClusterCondition
+seuratObj:
+     /home/groups/CEDAR/enright/Runx_AML/Velocity_Sept2020/scRNAvelocity/input/BM_combined_sept.rds
+     #/home/groups/CEDAR/chitsazan/Projects/Anupriya/RThings/R_Sept/BM_combined_sept15.RDS
+seurat_downsample:
+    - "FPD7_1"
+    - "FPD8_1"
+    - "HD4_1"
+    - "FPD9_1"
+    - "FPD10_1"
+    - "HD5"
+    - "HD6_1"
+    - "FPD12"
+cr_environment:
+    /home/groups/precepts/enright/envs/python_envs/cellrank

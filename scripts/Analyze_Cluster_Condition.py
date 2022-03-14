@@ -34,8 +34,8 @@ def main():
     sys.stderr.write("loading parameters and variables\n")
     in_object         = snakemake.input.in_object
     out_object        = snakemake.output.out_object
-    
-
+    #markers_file      = snakemake.input.markers_file
+    #ds_markers_file   = snakemake.input.ds_markers_file
     adata_out         = snakemake.output.adata_out
     genes_of_interest = snakemake.params.genes
     
@@ -46,6 +46,9 @@ def main():
     markers_dir = snakemake.params.markers_dir
     #if out directory doesn't exist:
     out_dir           = snakemake.params.out_dir
+    
+    #TSV_markers = pd.read_csv(markers_file,sep = "\t")
+    #TSV_markers_ds = pd.read_csv(ds_markers_file,sep = "\t")
     
     if not os.path.exists(out_dir):
         sys.stderr.write("creating out path: {}".format(out_dir))
@@ -498,64 +501,8 @@ def main():
 
             plot_gene_velocity(adata,gene = list(submark['genes']), clust = clust, groupby = "samples",Order_plot = sample_names, cluster = "cluster", layer = "velocity",dir_base = 'samples_FPD_up')
             plot_gene_velocity(adata,gene = list(submark_s['genes']), clust = clust, groupby = "samples",Order_plot = sample_names, cluster = "cluster", layer = "velocity",dir_base = 'samples_FPD_down')
-        
-    #change output dir
-    dir_violin = os.path.join(violin_files,"cross_referenced_DE")
-    os.makedirs(dir_violin,exist_ok = True)
-    os.chdir(dir_violin)
-    for i,clust in enumerate(clusters_of_interest):    
-        DE_markers = pd.read_csv("{}/DE.{}_FPD.{}_Healthy.Markers.txt".format(markers_dir,clust,clust), sep = "\t", index_col = 0)
-        
-        DE_markers["genes"] = DE_markers.index
-        valid_genes = [gene for gene in adata.var_names]
-        markers = markers[markers['genes'].isin(valid_genes)]
-        #only significant
-        significance = 0.05
-        markers = DE_markers[DE_markers['p_val_adj']<significance]
-        
-        Rank_tsv = pd.read_csv("{}/{}/top_velocity_{}_genes.tsv".format(tsv_file_path,clust.replace("/","."),clust.replace("/",".")), sep = "\t", index_col = 0)
-        markers = DE_markers.merge(Rank_tsv,left_index = True, right_on = 'genes')
-        #only markers that have velocities
-        valid_genes = [gene for gene in list(markers['genes']) if any(~np.isnan(adata.layers["velocity"][:,adata.var_names.get_loc(gene)]))]
-        markers = markers[markers['genes'].isin(valid_genes)]
-        #add difference between FPD and HD 
-        markers['delta'] = markers['{}'.format(Order_plot[1])] - markers['{}'.format(Order_plot[0])]
-        #add agreement if difference matches the sign of the logFC (upregulated in FPD will match a positive sign)
-        markers['agreement'] = np.sign(markers['avg_logFC']) == np.sign(markers['delta'])
-        show = False
-        for n in Numb_genes:
-            #get genes that are up regulated in FPD
-            submark = markers.nlargest(n,"avg_logFC")
-            #plot means
-            if submark.shape[0] > 0:
-                plot_gene_velocity(adata,gene = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity",median = False,stat = True,show = show,dir_base = "FPD_up",hue_order = Order_plot, palette = color_dict)
-                velocity_by_sample(adata,genes = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity", show = False,dir_base = "FPD_up_by_gene", stat = True,hue_order = Order_plot, palette = color_dict)
-            #get genes that are down regulated in FPD
-            submark = markers.nsmallest(n,"avg_logFC")
-            if submark.shape[0] > 0:
-                plot_gene_velocity(adata,gene = list(submark["genes"]),groupby = condition, cluster = "cluster", clust = clust,layer = "velocity",median = False,stat = True,show = show,dir_base = "FPD_down",hue_order = Order_plot, palette = color_dict)
-                velocity_by_sample(adata,genes = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity", show = False,dir_base = "FPD_down_by_gene", stat = True,hue_order = Order_plot, palette = color_dict)
-            #get genes that are up regulated in FPD and down in velocity
-            submark = markers[markers['agreement'] == False].nlargest(n,"avg_logFC")
-            if submark.shape[0] > 0:
-                plot_gene_velocity(adata,gene = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity",median = False,stat = True,show = show,dir_base = "FPD_up_velo_down",hue_order = Order_plot, palette = color_dict)
-                velocity_by_sample(adata,genes = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity", show = False,dir_base = "FPD_up_velo_down_by_gene", stat = True,hue_order = Order_plot, palette = color_dict)
-            #get genes that are both up regulated in FPD and up in velocity
-            submark = markers[markers['agreement'] == True].nlargest(n,"avg_logFC")
-            if submark.shape[0] > 0:
-                plot_gene_velocity(adata,gene = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity",median = False,stat = True,show = show,dir_base = "FPD_up_velo_up",hue_order = Order_plot, palette = color_dict)
-                velocity_by_sample(adata,genes = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity", show = False,dir_base = "FPD_up_velo_up_by_gene", stat = True,hue_order = Order_plot, palette = color_dict)
-
-            #get genes that are down regulated in FPD and up in velocity
-            submark = markers[markers['agreement'] == False].nsmallest(n,"avg_logFC")
-            if submark.shape[0] > 0:
-                plot_gene_velocity(adata,gene = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity",median = False,stat = True,show = show,dir_base = "FPD_down_velo_up",hue_order = Order_plot, palette = color_dict)
-                velocity_by_sample(adata,genes = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity", show = False,dir_base = "FPD_down_velo_up_by_gene", stat = True,hue_order = Order_plot, palette = color_dict)
-            #get genes that are both up regulated in FPD and up in velocity
-            submark = markers[markers['agreement'] == True].nsmallest(n,"avg_logFC")
-            if submark.shape[0] > 0:
-                plot_gene_velocity(adata,gene = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity",median = False,stat = True,show = show,dir_base = "FPD_down_velo_down",hue_order = Order_plot, palette = color_dict)
-                velocity_by_sample(adata,genes = list(submark["genes"]), groupby = condition, cluster = "cluster", clust = clust,layer = "velocity", show = False,dir_base = "FPD_down_velo_down_by_gene", stat = True,hue_order = Order_plot, palette = color_dict)
-        
+    
+    
+  
 if __name__ == '__main__':
     main()
